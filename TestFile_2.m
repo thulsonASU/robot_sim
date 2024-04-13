@@ -28,7 +28,8 @@ selectedOption = 'x';
 
 
 % Create a "Run" button
-runButton = uibutton(fig, 'Position', [20, 280, 510, 40], 'Text', 'Run', 'ButtonPushedFcn', @(btn,event) runButton_Callback(dhTable,dropdown));
+runButton = uibutton(fig, 'Position', [430, 110, 100, 22], 'Text', 'Run', 'ButtonPushedFcn', @(btn,event) runButton_Callback(dhTable,dropdown));
+runButton.BackgroundColor = [0.2 0.7 0.2]; % Green color
 data = {'','','',''};
 dhTable.Data = data;
 

@@ -247,7 +247,8 @@ for i = 1:NumberOfJoints
     fprintf("Equation #"+i+"\n")
     disp(Tao(i))
 
-    tao(i) = subs(rhs(Tao(i)),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
+    % substitute values
+    tao(i) = subs(Tao(i),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
         str2sym(IntertiaMI_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
         [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,JointLengths,CenterOfMassLengths]);
 end
@@ -262,56 +263,36 @@ assignin('base', 'qdd', qdd);
 
 %% Solve it plz
 
-% Maybe Make User Inputs :)
-initial_t1 = 1; % Initial joint position for joint 1
-initial_t2 = 1; % Initial joint position for joint 2
-initial_t3 = 1; % Initial joint position for joint 3
-initial_t1_d = 0; % Initial joint velocity for joint 1
-initial_t2_d = 0; % Initial joint velocity for joint 2
-initial_t3_d = 0; % Initial joint velocity for joint 3
+disp('Simulating zero with ODE45')
+disp('Later when we can input values we will be able to simulate with ode45 with a slight nudge')
+disp('Due to lack of information or friction the system crashes MATLAB if nudged')
+% Take the symbolic equations of motion and convert them to Laplace frequency domain
 
-% Define initial conditions for the state variables (joint positions, velocities, accelerations)
-X0 = [initial_t1; initial_t2; initial_t3; initial_t1_d; initial_t2_d; initial_t3_d];
+% Initial conditions
+y0 = [0; 0; 0; 0; 0; 0; 0; 0; 0]; % t1, t2, t3, t1_d, t2_d, t3_d, t1_dd, t2_dd, t3_dd
 
-% Run the simulation up to the time of the step
-[t1, X1] = ode45(@systemDynamics, [0,5], X0);
+% Time span for the simulation
+tspan = [0 10]; % From 0 to 10 seconds
 
-% Apply the step input to the joint variables
-X_step = X1(end, :);  % get the final state from the first simulation
-X_step(1:3) = X_step(1:3) + [1 1 1];  % apply the step input
+options = odeset('MaxStep', 0.1,'RelTol',1e-4,'AbsTol',[1e-5 1e-5 1e-5 1e-5 1e-5 1e-5 1e-5 1e-5 1e-5]); % Example: maximum step size of 0.01
+% Solve the differential equations
+[t, y] = ode45(@systemDynamics, tspan, y0, options);
 
-% Continue the simulation from the time of the step with the new initial conditions
-[t2, X2] = ode45(@systemDynamics, [5, 10], X_step);
+% Extract joint angles and their derivatives from y
+t1 = y(:, 1);
+t2 = y(:, 2);
+t3 = y(:, 3);
+t1_d = y(:, 4);
+t2_d = y(:, 5);
+t3_d = y(:, 6);
+t1_dd = y(:, 7);
+t2_dd = y(:, 8);
+t3_dd = y(:, 9);
 
-% Combine the results from the two simulations
-t = [t1; t2];
-X = [X1; X2];
-
-% Extract the state variables (joint positions, velocities, accelerations) from the solution
-t1 = X(:, 1);
-t2 = X(:, 2);
-t3 = X(:, 3);
-t1_d = X(:, 4);
-t2_d = X(:, 5);
-t3_d = X(:, 6);
-
-% Plot or analyze the results as needed
-% Plot the joint positions over time
 figure;
-plot(t, t1, 'r', t, t2, 'g', t, t3, 'b');
+plot(t, t1, t, t2, t, t3);
 xlabel('Time (s)');
-ylabel('Joint Position (rad)');
-legend('Joint 1', 'Joint 2', 'Joint 3');
-title('Joint Positions vs Time');
-
-% Plot the joint velocities over time
-figure;
-plot(t, t1_d, 'r', t, t2_d, 'g', t, t3_d, 'b');
-xlabel('Time (s)');
-ylabel('Joint Velocity (rad/s)');
-legend('Joint 1', 'Joint 2', 'Joint 3');
-title('Joint Velocities vs Time');
+ylabel('Joint Angle (rad)');
+legend('t1', 't2', 't3');
+title('3R Planar Robot Arm Joint Angles Over Time');
 end
-
-
-

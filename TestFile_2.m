@@ -289,7 +289,7 @@ function runButton_Callback(dhTable,dropdown)
     for i = 1:NumberOfJoints
         y0(i) = 0; % Initial joint angle
         y0(i+NumberOfJoints) = 0; % Initial joint velocity
-        y0(i+NumberOfJoints*2) = 0; % Initial joint acceleration
+        y0(i+NumberOfJoints*2) = 0.1; % Initial joint acceleration
     end
     disp('Initial Conditions:')
     disp(y0)
@@ -303,19 +303,14 @@ function runButton_Callback(dhTable,dropdown)
     % Pass the function for tao to the systemDynamics function
     [t, y] = ode45(@(t, y) systemDynamics(t, y, eqs, q_all, NumberOfJoints), tspan, y0, options);
 
-    % Extract joint angles and their derivatives from y
-    t1 = y(:, 1);
-    t2 = y(:, 2);
-    t3 = y(:, 3);
-    t1_d = y(:, 4);
-    t2_d = y(:, 5);
-    t3_d = y(:, 6);
-    t1_dd = y(:, 7);
-    t2_dd = y(:, 8);
-    t3_dd = y(:, 9);
-
+    % Positions of the joints over time
+    pos = zeros(NumberOfJoints, length(t));
+    for i = 1:NumberOfJoints
+        pos(i,:) = y(:,i);
+    end
+    
     figure;
-    plot(t, t1, t, t2, t, t3);
+    plot(t, pos(1,:), t, pos(2,:), t, pos(3,:));
     xlabel('Time (s)');
     ylabel('Joint Angle (rad)');
     legend('t1', 't2', 't3');

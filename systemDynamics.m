@@ -22,5 +22,5 @@ function dydt = systemDynamics(t, y, eqs, q_all, NumberOfJoints)
     dydt = [transpose(Y(NumberOfJoints+1:end)); transpose(Tao)];
     
     % convert dydt to double
-    dydt = double(dydt);
+    dydt = double(dydt)
 end

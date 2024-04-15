@@ -1,4 +1,4 @@
-function dxdt = systemDynamics(t, x, u, A, B)
+function dxdt = systemDynamics_ss_test(t, x, u, A, B)
 
     % Substitute the variables in A
     for i = 1:size(A, 1)
@@ -46,12 +46,17 @@ function dxdt = systemDynamics(t, x, u, A, B)
     A = double(A);
     B = double(B);
 
+    disp(class(A))
+    disp(class(B))
+    disp(class(x))
+    disp(class(u))
+
     % calculate the state space
     dxdt = A*x + B*u;
 
     % print dydt when time is approximately a whole number
     if abs(mod(t, 1)) < 1e-6  % adjust the tolerance as needed
-        disp('dxdt at time t: ');
+        disp('dydt at time t: ');
         disp(t);
         disp(transpose(dxdt));
     end

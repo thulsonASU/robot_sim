@@ -22,5 +22,13 @@ function dydt = systemDynamics(t, y, eqs, q_all, NumberOfJoints)
     dydt = [transpose(Y(NumberOfJoints+1:end)); transpose(Tao)];
     
     % convert dydt to double
-    dydt = double(dydt)
+    dydt = double(dydt);
+
+    % print dydt when time is approximately a whole number
+    if abs(mod(t, 1)) < 1e-6  % adjust the tolerance as needed
+        disp('dydt at time t: ');
+        disp(t);
+        disp(transpose(dydt));
+    end
+
 end

@@ -20,8 +20,8 @@ removeButton = uibutton(fig, 'Position', [430, 190, 100, 22], 'Text', 'Remove Ro
 
 %Create Gravity Dropdown Menu
 uilabel(fig, 'Text', 'Select Gravity Direction', 'Position', [430, 160, 100, 22]);
-dropdown = uidropdown(fig, 'Position', [430, 140, 100, 22], 'Items', {'x', 'y', 'z', '-x', '-y', '-z'}, 'Value', 'x', 'ValueChangedFcn', @(dropdown,event) dropdown_Callback(dropdown));
-selectedOption = 'x';
+dropdown = uidropdown(fig, 'Position', [430, 140, 100, 22], 'Items', {'x', 'y', 'z', '-x', '-y', '-z'}, 'Value', '-z', 'ValueChangedFcn', @(dropdown,event) dropdown_Callback(dropdown));
+% selectedOption = 'x';
 
 % Create a "Run" button
 runButton = uibutton(fig, 'Position', [430, 110, 100, 22], 'Text', 'Run', 'ButtonPushedFcn', @(btn,event) runButton_Callback(dhTable,dropdown));
@@ -29,25 +29,26 @@ runButton.BackgroundColor = [0.2 0.7 0.2]; % Green color
 data = {'','','',''};
 dhTable.Data = data;
 
+closeButton = uibutton(fig, 'Position', [430, 10, 100, 22], 'Text', 'Close', 'ButtonPushedFcn', @(btn,event) close(fig));
+closeButton.BackgroundColor = [0.7 0.2 0.2]; % Red color
+
 % BUTTON FOR DYNAMICS SIMULATION
-% Create a new button under run that takes you to the dynamics simulation GUI
-dynamicsButton = uibutton(fig, 'Position', [430, 80, 100, 22], 'Text', 'Dynamics Sim', 'ButtonPushedFcn', @(btn,event) dynamicsButton_Callback());
-dynamicsButton.BackgroundColor = [0.2 0.7 0.2]; % Green color
-
-function dynamicsButton_Callback()
-    % Create a new figure window
-    newFig = uifigure('Name', 'Dynamics Simulation', 'NumberTitle', 'off');
-
-    % Add UI controls to the new figure window as needed
-    % For example, you can add a label and a button:
-    uilabel(newFig, 'Text', 'Dynamics Simulation', 'Position', [20, 80, 200, 22]);
-    closeButton = uibutton(newFig, 'Position', [20, 50, 100, 22], 'Text', 'Close', 'ButtonPushedFcn', @(btn,event) close(newFig));
-    closeButton.BackgroundColor = [0.7 0.2 0.2]; % Red color
-
-
-end
-
-% END DYNAMICS SIM GUI
+dynamicsButton = uibutton(fig, 'Position', [430, 80, 100, 22], 'Text', 'Dynamics Sim', 'ButtonPushedFcn', ...
+    @(btn,event) dynamicsButton_Callback( ...
+    evalin('base', 'NumberOfJoints'), ...
+    evalin('base', 'Tao'), ...
+    evalin('base', 'Kr_Sym'), ...
+    evalin('base', 'MassLI_Sym'), ...
+    evalin('base', 'MassMI_Sym'), ...
+    evalin('base', 'IntertiaLI_Sym'), ...
+    evalin('base', 'IntertiaMI_Sym'), ...
+    evalin('base', 'JointSymbolic'), ...
+    evalin('base', 'CenterOfMassSymbolic'), ...
+    evalin('base', 'JointLengths'), ...
+    evalin('base', 'CenterOfMassLengths'),...
+    evalin('base', 'q'), ...
+    evalin('base', 'qd'), ...
+    evalin('base', 'qdd')));
 
 function dropdown_Callback(dropdown)
     selectedOption = dropdown.Value;
@@ -241,9 +242,7 @@ function runButton_Callback(dhTable,dropdown)
 
     %% Friction 
     % Assuming 0 friction  :)
-
     %% Adding them all together :)
-
 
     %Make qd and qdd and taos 
     for i = 1:NumberOfJoints
@@ -262,45 +261,188 @@ function runButton_Callback(dhTable,dropdown)
         fprintf("Equation #"+i+"\n")
         disp(Tao(i))
 
-        % substitute values
-        eqs(i) = subs(rhs(Tao(i)),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
-            str2sym(IntertiaMI_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
-            [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,JointLengths,CenterOfMassLengths]);
     end
 
-    % send to workspace for ode45 stuff (Will remove later when no longer needed for debugging) :)
-    assignin('base', 'eqs', eqs);
+    % send to workspace for ode45 stuff
+    assignin('base', 'Tao', Tao);
     assignin('base', 'NumberOfJoints', NumberOfJoints);
+    assignin('base', 'JointSymbolic', JointSymbolic);
+    assignin('base', 'CenterOfMassSymbolic', CenterOfMassSymbolic);
+    assignin('base', 'Kr_Sym', Kr_Sym);
+    assignin('base', 'MassLI_Sym', MassLI_Sym);
+    assignin('base', 'MassMI_Sym', MassMI_Sym);
+    assignin('base', 'IntertiaLI_Sym', IntertiaLI_Sym);
+    assignin('base', 'IntertiaMI_Sym', IntertiaMI_Sym);
     assignin('base', 'JointLengths', JointLengths);
+    assignin('base', 'CenterOfMassLengths', CenterOfMassLengths);
     assignin('base', 'q', q);
     assignin('base', 'qd', qd);
     assignin('base', 'qdd', qdd);
 
-    %% Solve it plz
+end
 
+% DYNAMICS SIM GUI
+function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI_Sym, IntertiaLI_Sym, IntertiaMI_Sym, JointSymbolic, CenterOfMassSymbolic, JointLengths, CenterOfMassLengths, q, qd, qdd)
+    % Create a new figure window
+    dynamicsFig = uifigure('Name', 'Dynamics Simulation', 'NumberTitle', 'off');
+
+    closeButton = uibutton(dynamicsFig, 'Position', [10, 10, 100, 22], 'Text', 'Close', 'ButtonPushedFcn', @(btn,event) close(dynamicsFig));
+    closeButton.BackgroundColor = [0.7 0.2 0.2]; % Red color
+
+    % Add UI controls to the new figure window as needed
+    % For example, you can add a label and a button:
+    uilabel(dynamicsFig, 'Text', 'Dynamics Simulation', 'Position', [20, 380, 200, 22]);
+    
+    % Add a label for instructions
+    uilabel(dynamicsFig, 'Text', 'For each joint provide the values for the following, ', 'Position', [20, 360, 400, 22]);
+    
+    % Add labels for each field
+    uilabel(dynamicsFig, 'Text', 'Kr:', 'Position', [40, 340, 50, 20]);
+    uilabel(dynamicsFig, 'Text', 'Mass LI:', 'Position', [40, 320, 50, 20]);
+    uilabel(dynamicsFig, 'Text', 'Mass MI:', 'Position', [40, 300, 50, 20]);
+    uilabel(dynamicsFig, 'Text', 'Inertia LI:', 'Position', [40, 280, 65, 20]);
+    uilabel(dynamicsFig, 'Text', 'Inertia MI:', 'Position', [40, 260, 65, 20]);
+    uilabel(dynamicsFig, 'Text', 'Acceleration nudge to all joints:', 'Position', [210, 340, 200, 20]);
+    uilabel(dynamicsFig, 'Text', 'ACHTUNG! without a proper governing','Position', [210, 320, 250, 20]);
+    uilabel(dynamicsFig, 'Text', 'equation the simulation will become unstable','Position', [210, 300, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'and may take too much RAM and CPU Power','Position', [210, 280, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Final simulation time:','Position', [210, 260, 300, 20]);
+
+    uilabel(dynamicsFig, 'Text', 'MaxStep:','Position', [40, 220, 60, 20]);
+    uilabel(dynamicsFig, 'Text', 'RelTol:','Position', [40, 200, 60, 20]);
+    uilabel(dynamicsFig, 'Text', 'AbsTol:','Position', [40, 180, 60, 20]);
+
+    % Make a ui field to fill in for Kr MassLI MassMI IntertiaLI IntertiaMI center of mass lengths
+    KrEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 340, 100, 20], 'Value', '1,1,1');
+    MassLIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 320, 100, 20], 'Value', '1,1,1');
+    MassMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 300, 100, 20], 'Value', '1,1,1');
+    IntertiaLIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 280, 100, 20], 'Value', '1,1,1');
+    IntertiaMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 260, 100, 20], 'Value', '1,1,1');
+    nudge = uieditfield(dynamicsFig, 'text', 'Position', [380, 340, 50, 20], 'Value', '0');
+    
+    tf = uieditfield(dynamicsFig, 'text', 'Position', [325, 260, 50, 20], 'Value', '5');
+    tf = str2num(tf.Value);
+    tspan = [0 tf]; % Final simulation time
+
+    maxStepField = uieditfield(dynamicsFig, 'text', 'Position', [100, 220, 100, 20], 'Value', '0.1');
+    relTolField = uieditfield(dynamicsFig, 'text', 'Position', [100, 200, 100, 20], 'Value', '1e-4');
+    absTolField = uieditfield(dynamicsFig, 'text', 'Position', [100, 180, 100, 20], 'Value', '1e-5');
+
+    % button to update the equations with the new values
+    runSimButton = uibutton(dynamicsFig, 'Position', [120, 10, 100, 22], 'Text', 'Run Simulation', 'ButtonPushedFcn', @(btn,event) runSimButton_Callback(...
+        dynamicsFig, ...    
+        NumberOfJoints, ...
+        Tao, ...
+        Kr_Sym, ...
+        MassLI_Sym, ...
+        MassMI_Sym, ...
+        IntertiaLI_Sym, ...
+        IntertiaMI_Sym, ...
+        JointSymbolic, ...
+        CenterOfMassSymbolic, ...
+        KrEditField, ...
+        MassLIEditField, ...
+        MassMIEditField, ...
+        IntertiaLIEditField, ...
+        IntertiaMIEditField, ...
+        JointLengths, ...
+        CenterOfMassLengths,...
+        q, ...
+        qd, ...
+        qdd, ...
+        nudge, ...
+        tspan, ...
+        maxStepField, ...
+        relTolField, ...
+        absTolField));
+    runSimButton.BackgroundColor = [0.2 0.7 0.2]; % Green color
+
+    % show plots button
+    plotButton = uibutton(dynamicsFig, 'Position', [230, 10, 100, 22], 'Text', 'Plot Simulation', 'ButtonPushedFcn', @(btn,event) plotButton_Callback(dynamicsFig));
+end
+
+% END DYNAMICS SIM GUI
+
+% % substitute values
+% eqs(i) = subs(rhs(Tao(i)),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
+%     str2sym(IntertiaMI_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
+%     [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,JointLengths,CenterOfMassLengths]);
+% function callback for substituting the values into the equations using a button
+function runSimButton_Callback( ...
+    dynamicsFig, ...
+    NumberOfJoints, ...
+    Tao, ...
+    Kr_Sym, ...
+    MassLI_Sym, ...
+    MassMI_Sym, ...
+    IntertiaLI_Sym, ...
+    IntertiaMI_Sym, ...
+    JointSymbolic, ...
+    CenterOfMassSymbolic, ...
+    KrEditField, ...
+    MassLIEditField, ...
+    MassMIEditField, ...
+    IntertiaLIEditField, ...
+    IntertiaMIEditField, ...
+    JointLengths, ...
+    CenterOfMassLengths,...
+    q, ...
+    qd, ...
+    qdd, ...
+    nudge, ...
+    tspan, ...
+    maxStepField, ...
+    relTolField, ...
+    absTolField)
+
+    % Get the values from the user input fields
+    % convert the EditField values to numbers str2num
+
+    % convert chars to array
+    Kr_Val = str2num(KrEditField.Value);
+    MassLI_Val = str2num(MassLIEditField.Value);
+    MassMI_Val = str2num(MassMIEditField.Value);
+    IntertiaLI_Val = str2num(IntertiaLIEditField.Value);
+    IntertiaMI_Val = str2num(IntertiaMIEditField.Value);
+    nudge = str2num(nudge.Value);
+    maxStep_Val = str2num(maxStepField.Value);
+    relTol_Val = str2num(relTolField.Value);
+    absTol_Val = str2num(absTolField.Value);
+
+    % Substitute the values into the equations
+    for i = 1:NumberOfJoints
+        eqs(i) = subs(rhs(Tao(i)),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
+                    str2sym(IntertiaMI_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
+                    [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,JointLengths,CenterOfMassLengths]);
+    end
+    
+    % Display the updated equations
+    for i = 1:NumberOfJoints
+        disp(['Equation ' num2str(i) ':']);
+        disp(eqs(i));
+    end
+
+    %% Solve it plz
     disp('Simulating system with zero initial condition using ODE45')
     disp('Later when we can input values we will be able to simulate with ODE45 with a slight nudge')
     disp('Due to lack of information or friction the system crashes MATLAB if nudged')
-    % Take the symbolic equations of motion and convert them to Laplace frequency domain
 
     % I need to remake initial conditions to be based on the number of joints
     % and the number of joints will be based on the number of rows in the table
 
     for i = 1:NumberOfJoints
-        y0(i) = 0; % Initial joint angle
-        y0(i+NumberOfJoints) = 0; % Initial joint velocity
-        y0(i+NumberOfJoints*2) = 0.1; % Initial joint acceleration
+        y0(i) = 0; % Initial joint angle for all joints
+        y0(i+NumberOfJoints) = 0; % Initial joint velocity for all joints
+        y0(i+NumberOfJoints*2) = nudge; % Initial joint acceleration for all joints
     end
     disp('Initial Conditions:')
     disp(y0)
-
-    % Time span for the simulation (Make a GUI user input later) :)
-    tspan = [0 10]; % From 0 to 10 seconds
     
     q_all = [str2sym(q) str2sym(qd) str2sym(qdd)];
-    options = odeset('MaxStep', 0.1,'RelTol',1e-4,'AbsTol',[1e-5 1e-5 1e-5 1e-5 1e-5 1e-5 1e-5 1e-5 1e-5]); % Example: maximum step size of 0.01
+
+    % Make some of these options user inputs :)
+    options = odeset('MaxStep',maxStep_Val,'RelTol',relTol_Val,'AbsTol',[absTol_Val*ones(1,(NumberOfJoints*3))]);
     % Solve the differential equations
-    % Pass the function for tao to the systemDynamics function
     [t, y] = ode45(@(t, y) systemDynamics(t, y, eqs, q_all, NumberOfJoints), tspan, y0, options);
 
     % Positions of the joints over time
@@ -309,10 +451,83 @@ function runButton_Callback(dhTable,dropdown)
         pos(i,:) = y(:,i);
     end
     
-    figure;
-    plot(t, pos(1,:), t, pos(2,:), t, pos(3,:));
-    xlabel('Time (s)');
-    ylabel('Joint Angle (rad)');
-    legend('t1', 't2', 't3');
-    title('3R Planar Robot Arm Joint Angles Over Time');
+    % Velocity of the joints over time
+    vel = zeros(NumberOfJoints, length(t));
+    for i = 1:NumberOfJoints
+        vel(i,:) = y(:,i+NumberOfJoints);
+    end
+
+    % Acceleration of the joints over time
+    acc = zeros(NumberOfJoints, length(t));
+    for i = 1:NumberOfJoints
+        acc(i,:) = y(:,i+2*NumberOfJoints);
+    end
+
+    setappdata(dynamicsFig, 't', t);
+    setappdata(dynamicsFig, 'pos', pos);
+    setappdata(dynamicsFig, 'vel', vel);
+    setappdata(dynamicsFig, 'acc', acc);
+
+    disp('Simulation complete');
+end
+
+% plotting function callback for pos vel acc
+function plotButton_Callback(dynamicsFig)
+    % Retrieve the results
+    t = getappdata(dynamicsFig, 't');
+    pos = getappdata(dynamicsFig, 'pos');
+    vel = getappdata(dynamicsFig, 'vel');
+    acc = getappdata(dynamicsFig, 'acc');
+    
+    % pos is the positions of each joint over time
+    % vel is the velocities of each joint over time
+    % acc is the accelerations of each joint over time
+
+    % plotting needs to be robust for the number of joints
+    % plot the positions of each joint over time
+
+    % Create a new figure window with a larger size
+    plotFig = uifigure('Name', 'Dynamics Simulation Plots', 'NumberTitle', 'off', 'Position', [100 100 625 500]);
+
+    % Add a button to close the plot figure
+    closeButton = uibutton(plotFig, 'Position', [10, 10, 100, 22], 'Text', 'Close', 'ButtonPushedFcn', @(btn,event) close(plotFig));
+    closeButton.BackgroundColor = [0.7 0.2 0.2]; % Red color
+
+    % Create axes for the position plot
+    posAxes = uiaxes(plotFig, 'Position', [50 250 400 100]);
+    % Plot the positions of each joint over time
+    for i = 1:size(pos, 1)
+        plot(posAxes, t, pos(i,:));
+        hold(posAxes, 'on');
+    end
+    title(posAxes, 'Joint Positions Over Time');
+    xlabel(posAxes, 'Time (s)');
+    ylabel(posAxes, 'Position (rad)');
+
+    % Create axes for the velocity plot
+    velAxes = uiaxes(plotFig, 'Position', [50 125 400 100]);
+    % Plot the velocities of each joint over time
+    for i = 1:size(vel, 1)
+        plot(velAxes, t, vel(i,:));
+        hold(velAxes, 'on');
+    end
+    title(velAxes, 'Joint Velocities Over Time');
+    xlabel(velAxes, 'Time (s)');
+    ylabel(velAxes, 'Velocity (rad/s)');
+
+    % Create axes for the acceleration plot
+    accAxes = uiaxes(plotFig, 'Position', [50 0 400 100]);
+    % Plot the accelerations of each joint over time
+    for i = 1:size(acc, 1)
+        plot(accAxes, t, acc(i,:));
+        hold(accAxes, 'on');
+    end
+    title(accAxes, 'Joint Accelerations Over Time');
+    xlabel(accAxes, 'Time (s)');
+    ylabel(accAxes, 'Acceleration (rad/s^2)');
+
+    % Adjust the positions and sizes of the axes to fit within the larger figure
+    posAxes.Position = [50 350 500 125];
+    velAxes.Position = [50 200 500 125];
+    accAxes.Position = [50 50 500 125];
 end

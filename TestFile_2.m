@@ -411,7 +411,7 @@ function runSimButton_Callback( ...
 
     % Substitute the values into the equations
     for i = 1:NumberOfJoints
-        eqs(i) = subs(rhs(Tao(i)),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
+        eqs(i) = subs(Tao(i),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
                     str2sym(IntertiaMI_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
                     [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,JointLengths,CenterOfMassLengths]);
     end
@@ -427,40 +427,77 @@ function runSimButton_Callback( ...
     disp('Later when we can input values we will be able to simulate with ODE45 with a slight nudge')
     disp('Due to lack of information or friction the system crashes MATLAB if nudged')
 
-    % I need to remake initial conditions to be based on the number of joints
-    % and the number of joints will be based on the number of rows in the table
-
-    for i = 1:NumberOfJoints
-        y0(i) = 0; % Initial joint angle for all joints
-        y0(i+NumberOfJoints) = 0; % Initial joint velocity for all joints
-        y0(i+NumberOfJoints*2) = nudge; % Initial joint acceleration for all joints
-    end
-    disp('Initial Conditions:')
-    disp(y0)
-    
-    q_all = [str2sym(q) str2sym(qd) str2sym(qdd)];
+    q = str2sym(q);
+    qd = str2sym(qd);
+    qdd = str2sym(qdd);
 
     % Make some of these options user inputs :)
-    options = odeset('MaxStep',maxStep_Val,'RelTol',relTol_Val,'AbsTol',[absTol_Val*ones(1,(NumberOfJoints*3))]);
-    % Solve the differential equations
-    [t, y] = ode45(@(t, y) systemDynamics(t, y, eqs, q_all, NumberOfJoints), tspan, y0, options);
+    options = odeset('MaxStep',maxStep_Val,'RelTol',relTol_Val,'AbsTol',absTol_Val*ones(1,(NumberOfJoints*2)));
+
+    % preallocate the state variables
+    x = sym('x', [NumberOfJoints*2, 1]);
+    u = sym('u', [NumberOfJoints, 1]);
+    TaoSyms = sym('Tao_', [NumberOfJoints, 1]);
+    dx = sym('dx', [NumberOfJoints*2, 1]);
+    % preallocate x0 as double
+    x0 = zeros(NumberOfJoints*2, 1);
+
+    % Define the state variables
+    for i = 1:NumberOfJoints
+        x(i) = q(i);
+        x(i+3) = qd(i);
+        
+        eqs(i) = subs(eqs(i), TaoSyms(i), u(i));
+        disp(eqs(i));
+
+        dx(i) = qd(i);
+        dx(i+3) = simplify(solve(eqs(i), qdd(i)));
+
+        x0(i) = 0; % Initial joint angle for all joints
+        x0(i+NumberOfJoints) = 0; % Initial joint velocity for all joints
+
+    end
+
+    disp('dx:')
+    disp(dx)
+
+
+    % Define the state matrix (A)
+    A = jacobian(dx, x);
+    % Define the input matrix (B)
+    B = jacobian(dx, u);
+
+    disp('State Variables:')
+    disp(x)
+    disp('Initial Conditions:')
+    disp(x0)
+    disp('State Matrix (A):')
+    disp(A)
+    disp('Input Matrix (B):')
+    disp(B)
+    
+    % Define the input function (if the input is time-varying) (MAKE ME A USER INPUT PLZ AAAAAAAAAAa) :)
+    u = @(t) [0; 0; 0]; % Example input function
+
+    % Solve the differential equations ode45 for state space
+    [t, x] = ode45(@(t, x) systemDynamics(t, x, u(t), A, B), tspan, x0, options);
 
     % Positions of the joints over time
     pos = zeros(NumberOfJoints, length(t));
     for i = 1:NumberOfJoints
-        pos(i,:) = y(:,i);
+        pos(i,:) = x(:,i);
     end
     
     % Velocity of the joints over time
     vel = zeros(NumberOfJoints, length(t));
     for i = 1:NumberOfJoints
-        vel(i,:) = y(:,i+NumberOfJoints);
+        vel(i,:) = x(:,i+NumberOfJoints);
     end
 
     % Acceleration of the joints over time
     acc = zeros(NumberOfJoints, length(t));
     for i = 1:NumberOfJoints
-        acc(i,:) = y(:,i+2*NumberOfJoints);
+        acc(i,:) = x(:,i+2*NumberOfJoints);
     end
 
     setappdata(dynamicsFig, 't', t);

@@ -50,7 +50,8 @@ function dxdt = systemDynamics(t, x, u, A, B)
     dxdt = A*x + B*u;
 
     % print dydt when time is approximately a whole number
-    if abs(mod(t, 1)) < 1e-6  % adjust the tolerance as needed
+    if abs(mod(t, 0.5)) < 1e-6  % adjust the tolerance as needed
+        disp('Running...')
         disp('dxdt at time t: ');
         disp(t);
         disp(transpose(dxdt));

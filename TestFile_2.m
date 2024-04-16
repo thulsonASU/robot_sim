@@ -302,11 +302,9 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
     uilabel(dynamicsFig, 'Text', 'Mass MI:', 'Position', [40, 300, 50, 20]);
     uilabel(dynamicsFig, 'Text', 'Inertia LI:', 'Position', [40, 280, 65, 20]);
     uilabel(dynamicsFig, 'Text', 'Inertia MI:', 'Position', [40, 260, 65, 20]);
-    uilabel(dynamicsFig, 'Text', 'Acceleration nudge to all joints:', 'Position', [210, 340, 200, 20]);
-    uilabel(dynamicsFig, 'Text', 'ACHTUNG! without a proper governing','Position', [210, 320, 250, 20]);
-    uilabel(dynamicsFig, 'Text', 'equation the simulation will become unstable','Position', [210, 300, 300, 20]);
-    uilabel(dynamicsFig, 'Text', 'and may take too much RAM and CPU Power','Position', [210, 280, 300, 20]);
-    uilabel(dynamicsFig, 'Text', 'Final simulation time:','Position', [210, 260, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define u (initial torque):', 'Position', [210, 340, 200, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define x0 (initial pos/vel):', 'Position', [210, 320, 200, 20]);
+    uilabel(dynamicsFig, 'Text', 'Final simulation time:','Position', [210, 300, 300, 20]);
 
     uilabel(dynamicsFig, 'Text', 'MaxStep:','Position', [40, 220, 60, 20]);
     uilabel(dynamicsFig, 'Text', 'RelTol:','Position', [40, 200, 60, 20]);
@@ -318,9 +316,9 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
     MassMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 300, 100, 20], 'Value', '1,1,1');
     IntertiaLIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 280, 100, 20], 'Value', '1,1,1');
     IntertiaMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 260, 100, 20], 'Value', '1,1,1');
-    nudge = uieditfield(dynamicsFig, 'text', 'Position', [380, 340, 50, 20], 'Value', '0');
-    
-    tf = uieditfield(dynamicsFig, 'text', 'Position', [325, 260, 50, 20], 'Value', '5');
+    uEditField = uieditfield(dynamicsFig, 'text', 'Position', [350, 340, 100, 20], 'Value', '0,0,0');
+    x0EditField = uieditfield(dynamicsFig, 'text', 'Position', [350, 320, 100, 20], 'Value', '0,0,0,0,0,0');
+    tf = uieditfield(dynamicsFig, 'text', 'Position', [350, 300, 50, 20], 'Value', '5');
     tf = str2num(tf.Value);
     tspan = [0 tf]; % Final simulation time
 
@@ -350,7 +348,8 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
         q, ...
         qd, ...
         qdd, ...
-        nudge, ...
+        uEditField, ...
+        x0EditField, ...
         tspan, ...
         maxStepField, ...
         relTolField, ...
@@ -389,7 +388,8 @@ function runSimButton_Callback( ...
     q, ...
     qd, ...
     qdd, ...
-    nudge, ...
+    uEditField, ...
+    x0EditField, ...
     tspan, ...
     maxStepField, ...
     relTolField, ...
@@ -404,7 +404,6 @@ function runSimButton_Callback( ...
     MassMI_Val = str2num(MassMIEditField.Value);
     IntertiaLI_Val = str2num(IntertiaLIEditField.Value);
     IntertiaMI_Val = str2num(IntertiaMIEditField.Value);
-    nudge = str2num(nudge.Value);
     maxStep_Val = str2num(maxStepField.Value);
     relTol_Val = str2num(relTolField.Value);
     absTol_Val = str2num(absTolField.Value);
@@ -422,62 +421,66 @@ function runSimButton_Callback( ...
         disp(eqs(i));
     end
 
-    %% Solve it plz
-    disp('Simulating system with zero initial condition using ODE45')
-    disp('Later when we can input values we will be able to simulate with ODE45 with a slight nudge')
-    disp('Due to lack of information or friction the system crashes MATLAB if nudged')
+    % Solve it plz
+    % okay :)
+    % solves it with malicious intent
 
     q = str2sym(q);
     qd = str2sym(qd);
     qdd = str2sym(qdd);
 
-    % Make some of these options user inputs :)
+    % Make some of these options user inputs :) (Done did it)
     options = odeset('MaxStep',maxStep_Val,'RelTol',relTol_Val,'AbsTol',absTol_Val*ones(1,(NumberOfJoints*2)));
 
     % preallocate the state variables
     x = sym('x', [NumberOfJoints*2, 1]);
-    u = sym('u', [NumberOfJoints, 1]);
+    u_sym = sym('u', [NumberOfJoints, 1]);
     TaoSyms = sym('Tao_', [NumberOfJoints, 1]);
     dx = sym('dx', [NumberOfJoints*2, 1]);
     % preallocate x0 as double
-    x0 = zeros(NumberOfJoints*2, 1);
+    % x0 = zeros(NumberOfJoints*2, 1);
 
     % Define the state variables
     for i = 1:NumberOfJoints
         x(i) = q(i);
         x(i+3) = qd(i);
         
-        eqs(i) = subs(eqs(i), TaoSyms(i), u(i));
-        disp(eqs(i));
+        eqs(i) = subs(eqs(i), TaoSyms(i), u_sym(i));
+        % disp('Substituted Equation:');
+        % disp(eqs(i));
 
         dx(i) = qd(i);
         dx(i+3) = simplify(solve(eqs(i), qdd(i)));
 
-        x0(i) = 0; % Initial joint angle for all joints
-        x0(i+NumberOfJoints) = 0; % Initial joint velocity for all joints
+        % x0(i) = 0; % Initial joint angle for all joints
+        % x0(i+NumberOfJoints) = 0; % Initial joint velocity for all joints
 
     end
 
-    disp('dx:')
-    disp(dx)
-
+    % disp('dx:')
+    % disp(dx)
 
     % Define the state matrix (A)
     A = jacobian(dx, x);
     % Define the input matrix (B)
-    B = jacobian(dx, u);
+    B = jacobian(dx, u_sym);
 
-    disp('State Variables:')
-    disp(x)
-    disp('Initial Conditions:')
-    disp(x0)
-    disp('State Matrix (A):')
-    disp(A)
-    disp('Input Matrix (B):')
-    disp(B)
-    
-    % Define the input function (if the input is time-varying) (MAKE ME A USER INPUT PLZ AAAAAAAAAAa) :)
-    u = @(t) [0; 0; 0]; % Example input function
+    % Torques
+    u = str2num(uEditField.Value);
+    u = @(t) transpose(u);
+
+    % User defined initial conditions
+    x0 = str2num(x0EditField.Value);
+    x0 = transpose(x0);
+
+    % disp('State Variables:')
+    % disp(x)
+    % disp('Initial Conditions:')
+    % disp(x0)
+    % disp('State Matrix (A):')
+    % disp(A)
+    % disp('Input Matrix (B):')
+    % disp(B)
 
     % Solve the differential equations ode45 for state space
     [t, x] = ode45(@(t, x) systemDynamics(t, x, u(t), A, B), tspan, x0, options);
@@ -494,16 +497,9 @@ function runSimButton_Callback( ...
         vel(i,:) = x(:,i+NumberOfJoints);
     end
 
-    % Acceleration of the joints over time
-    acc = zeros(NumberOfJoints, length(t));
-    for i = 1:NumberOfJoints
-        acc(i,:) = x(:,i+2*NumberOfJoints);
-    end
-
     setappdata(dynamicsFig, 't', t);
     setappdata(dynamicsFig, 'pos', pos);
     setappdata(dynamicsFig, 'vel', vel);
-    setappdata(dynamicsFig, 'acc', acc);
 
     disp('Simulation complete');
 end
@@ -514,11 +510,9 @@ function plotButton_Callback(dynamicsFig)
     t = getappdata(dynamicsFig, 't');
     pos = getappdata(dynamicsFig, 'pos');
     vel = getappdata(dynamicsFig, 'vel');
-    acc = getappdata(dynamicsFig, 'acc');
     
     % pos is the positions of each joint over time
     % vel is the velocities of each joint over time
-    % acc is the accelerations of each joint over time
 
     % plotting needs to be robust for the number of joints
     % plot the positions of each joint over time
@@ -552,19 +546,7 @@ function plotButton_Callback(dynamicsFig)
     xlabel(velAxes, 'Time (s)');
     ylabel(velAxes, 'Velocity (rad/s)');
 
-    % Create axes for the acceleration plot
-    accAxes = uiaxes(plotFig, 'Position', [50 0 400 100]);
-    % Plot the accelerations of each joint over time
-    for i = 1:size(acc, 1)
-        plot(accAxes, t, acc(i,:));
-        hold(accAxes, 'on');
-    end
-    title(accAxes, 'Joint Accelerations Over Time');
-    xlabel(accAxes, 'Time (s)');
-    ylabel(accAxes, 'Acceleration (rad/s^2)');
-
     % Adjust the positions and sizes of the axes to fit within the larger figure
     posAxes.Position = [50 350 500 125];
     velAxes.Position = [50 200 500 125];
-    accAxes.Position = [50 50 500 125];
 end

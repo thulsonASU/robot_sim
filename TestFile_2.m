@@ -128,7 +128,7 @@ function runButton_Callback(dhTable,dropdown)
             else
                 JointLengths(i) = DHTable{i,3};
                 si = string(i);
-                JointSymbolic(i) = "a"+si;
+                JointSymbolic(i) = "d"+si;
                 
                 DHTable{i,3} = str2sym(JointSymbolic(i));
             end
@@ -195,7 +195,7 @@ function runButton_Callback(dhTable,dropdown)
         %Assume joints are real.
         assume(str2sym(q(i)), "real");
         %Assume joints lengths are positive lol
-        if numel(JointSymbolic) > 0
+        if numel(JointSymbolic) >= i
             assume(str2sym(JointSymbolic(i)),"positive")
         end
     end

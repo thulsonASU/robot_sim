@@ -242,8 +242,12 @@ function runButton_Callback(dhTable,dropdown)
 
     %% Friction 
     for i = 1:NumberOfJoints
-        FrictionS_Sym = "FS"+i;
-        FrictionS_Val = 1;
+        FrictionS_Sym(i) = "Fs"+i;
+        FrictionS_Val(i) = 1;
+        
+        FrictionV_Sym(i) = "Fv"+i;
+        FrictionV_Val(i) = 1;
+        
     end
     %% Adding them all together :)
 
@@ -256,9 +260,9 @@ function runButton_Callback(dhTable,dropdown)
     Bq_x_qdd = Bq*str2sym(qdd');
     C_x_qd = C*str2sym(qd');
     Fs = str2sym(FrictionS_Sym)*str2sym(qd');
-    %Fs*sgn(q)
+    Fv = str2sym(FrictionV_Sym)*sign(str2sym(qd'))
 
-    Tao = tao == Bq_x_qdd+C_x_qd+Fs+G;
+    Tao = tao == Bq_x_qdd+C_x_qd+Fs+Fv+G;
     fprintf("\nEquations Of Motion:\n")
     for i = 1:NumberOfJoints
         fprintf("Equation #"+i+"\n")

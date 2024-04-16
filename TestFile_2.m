@@ -259,9 +259,10 @@ function runButton_Callback(dhTable,dropdown)
     end
     Bq_x_qdd = Bq*str2sym(qdd');
     C_x_qd = C*str2sym(qd');
-    Fs = str2sym(FrictionS_Sym)*str2sym(qd');
-    Fv = str2sym(FrictionV_Sym)*sign(str2sym(qd'))
-
+    for i = 1:NumberOfJoints
+        Fs(i,:) = str2sym(FrictionS_Sym(i))*str2sym(qd(i));
+        Fv(i,:) = str2sym(FrictionV_Sym(i))*sign(str2sym(qd(i)));
+    end
     Tao = tao == Bq_x_qdd+C_x_qd+Fs+Fv+G;
     fprintf("\nEquations Of Motion:\n")
     for i = 1:NumberOfJoints

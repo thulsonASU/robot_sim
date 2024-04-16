@@ -128,7 +128,7 @@ function runButton_Callback(dhTable,dropdown)
             else
                 JointLengths(i) = DHTable{i,3};
                 si = string(i);
-                JointSymbolic(i) = "a"+si;
+                JointSymbolic(i) = "d"+si;
                 
                 DHTable{i,3} = str2sym(JointSymbolic(i));
             end
@@ -195,7 +195,7 @@ function runButton_Callback(dhTable,dropdown)
         %Assume joints are real.
         assume(str2sym(q(i)), "real");
         %Assume joints lengths are positive lol
-        if numel(JointSymbolic) > 0
+        if numel(JointSymbolic) >= i
             assume(str2sym(JointSymbolic(i)),"positive")
         end
     end
@@ -241,7 +241,14 @@ function runButton_Callback(dhTable,dropdown)
     %G
 
     %% Friction 
-    % Assuming 0 friction  :)
+    for i = 1:NumberOfJoints
+        FrictionS_Sym(i) = "Fs"+i;
+        FrictionS_Val(i) = 1;
+        
+        FrictionV_Sym(i) = "Fv"+i;
+        FrictionV_Val(i) = 1;
+        
+    end
     %% Adding them all together :)
 
     %Make qd and qdd and taos 
@@ -252,10 +259,11 @@ function runButton_Callback(dhTable,dropdown)
     end
     Bq_x_qdd = Bq*str2sym(qdd');
     C_x_qd = C*str2sym(qd');
-    %Fv*qd
-    %Fs*sgn(q)
-
-    Tao = tao == Bq_x_qdd+C_x_qd+G;
+    for i = 1:NumberOfJoints
+        Fs(i,:) = str2sym(FrictionS_Sym(i))*str2sym(qd(i));
+        Fv(i,:) = str2sym(FrictionV_Sym(i))*sign(str2sym(qd(i)));
+    end
+    Tao = tao == Bq_x_qdd+C_x_qd+Fs+Fv+G;
     fprintf("\nEquations Of Motion:\n")
     for i = 1:NumberOfJoints
         fprintf("Equation #"+i+"\n")

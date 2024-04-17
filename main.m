@@ -644,37 +644,39 @@ function plotButton_Callback(dynamicsFig)
     % plot the positions of each joint over time
 
     % Create a new figure window with a larger size
-    plotFig = uifigure('Name', 'Dynamics Simulation Plots', 'NumberTitle', 'off', 'Position', [100 100 625 500]);
+    plotFig = uifigure('Name', 'Dynamics Simulation Plots', 'NumberTitle', 'off', 'Position', [100 100 625 400]);
 
     % Add a button to close the plot figure
     closeButton = uibutton(plotFig, 'Position', [10, 10, 100, 22], 'Text', 'Close', 'ButtonPushedFcn', @(btn,event) close(plotFig));
     closeButton.BackgroundColor = [0.7 0.2 0.2]; % Red color
 
     % Create axes for the position plot
-    posAxes = uiaxes(plotFig, 'Position', [50 250 400 100]);
+    posAxes = uiaxes(plotFig, 'Position', [50 220 500 125]);
     % Plot the positions of each joint over time
+    legendEntries = cell(1, size(pos, 1)); % Initialize cell array for legend entries
     for i = 1:size(pos, 1)
         plot(posAxes, t, pos(i,:));
         hold(posAxes, 'on');
+        legendEntries{i} = sprintf('Joint %d', i); % Add entry to legend
     end
+    legend(posAxes, legendEntries); % Add legend to plot
     title(posAxes, 'Joint Positions Over Time');
     xlabel(posAxes, 'Time (s)');
     ylabel(posAxes, 'Position (rad)');
 
     % Create axes for the velocity plot
-    velAxes = uiaxes(plotFig, 'Position', [50 125 400 100]);
+    velAxes = uiaxes(plotFig, 'Position', [50 80 500 125]);
     % Plot the velocities of each joint over time
+    legendEntries = cell(1, size(vel, 1)); % Initialize cell array for legend entries
     for i = 1:size(vel, 1)
         plot(velAxes, t, vel(i,:));
         hold(velAxes, 'on');
+        legendEntries{i} = sprintf('Joint %d', i); % Add entry to legend
     end
+    legend(velAxes, legendEntries); % Add legend to plot
     title(velAxes, 'Joint Velocities Over Time');
     xlabel(velAxes, 'Time (s)');
     ylabel(velAxes, 'Velocity (rad/s)');
-
-    % Adjust the positions and sizes of the axes to fit within the larger figure
-    posAxes.Position = [50 350 500 125];
-    velAxes.Position = [50 200 500 125];
 end
 
 % END OF TYLERS DYNAMICAL WONDERLAND

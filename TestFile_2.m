@@ -281,6 +281,8 @@ function runButton_Callback(dhTable,dropdown)
     assignin('base', 'MassMI_Sym', MassMI_Sym);
     assignin('base', 'IntertiaLI_Sym', IntertiaLI_Sym);
     assignin('base', 'IntertiaMI_Sym', IntertiaMI_Sym);
+    assignin('base', 'FrictionS_Sym', FrictionS_Sym);
+    assignin('base', 'FrictionV_Sym', FrictionV_Sym);
     assignin('base', 'JointLengths', JointLengths);
     assignin('base', 'CenterOfMassLengths', CenterOfMassLengths);
     assignin('base', 'q', q);
@@ -290,7 +292,7 @@ function runButton_Callback(dhTable,dropdown)
 end
 
 % DYNAMICS SIM GUI
-function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI_Sym, IntertiaLI_Sym, IntertiaMI_Sym, JointSymbolic, CenterOfMassSymbolic, JointLengths, CenterOfMassLengths, q, qd, qdd)
+function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI_Sym, IntertiaLI_Sym, IntertiaMI_Sym, FrictionS_Sym, FrictionV_Sym, JointSymbolic, CenterOfMassSymbolic, JointLengths, CenterOfMassLengths, q, qd, qdd)
     % Create a new figure window
     dynamicsFig = uifigure('Name', 'Dynamics Simulation', 'NumberTitle', 'off');
 
@@ -310,13 +312,16 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
     uilabel(dynamicsFig, 'Text', 'Mass MI:', 'Position', [40, 300, 50, 20]);
     uilabel(dynamicsFig, 'Text', 'Inertia LI:', 'Position', [40, 280, 65, 20]);
     uilabel(dynamicsFig, 'Text', 'Inertia MI:', 'Position', [40, 260, 65, 20]);
+    % Friction
+    uilabel(dynamicsFig, 'Text', 'Friction S:', 'Position', [40, 240, 65, 20]);
+    uilabel(dynamicsFig, 'Text', 'Friction V:', 'Position', [40, 220, 65, 20]);
     uilabel(dynamicsFig, 'Text', 'Define u (initial torque):', 'Position', [210, 340, 200, 20]);
     uilabel(dynamicsFig, 'Text', 'Define x0 (initial pos/vel):', 'Position', [210, 320, 200, 20]);
     uilabel(dynamicsFig, 'Text', 'Final simulation time:','Position', [210, 300, 300, 20]);
 
-    uilabel(dynamicsFig, 'Text', 'MaxStep:','Position', [40, 220, 60, 20]);
-    uilabel(dynamicsFig, 'Text', 'RelTol:','Position', [40, 200, 60, 20]);
-    uilabel(dynamicsFig, 'Text', 'AbsTol:','Position', [40, 180, 60, 20]);
+    uilabel(dynamicsFig, 'Text', 'MaxStep:','Position', [40, 200, 60, 20]);
+    uilabel(dynamicsFig, 'Text', 'RelTol:','Position', [40, 180, 60, 20]);
+    uilabel(dynamicsFig, 'Text', 'AbsTol:','Position', [40, 160, 60, 20]);
 
     % Make a ui field to fill in for Kr MassLI MassMI IntertiaLI IntertiaMI center of mass lengths
     KrEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 340, 100, 20], 'Value', '1,1,1');
@@ -324,15 +329,18 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
     MassMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 300, 100, 20], 'Value', '1,1,1');
     IntertiaLIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 280, 100, 20], 'Value', '1,1,1');
     IntertiaMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 260, 100, 20], 'Value', '1,1,1');
+    % Friction
+    FrictionSEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 240, 100, 20], 'Value', '1,1,1');
+    FrictionVEditField = uieditfield(dynamicsFig, 'text', 'Position', [100, 220, 100, 20], 'Value', '1,1,1');
     uEditField = uieditfield(dynamicsFig, 'text', 'Position', [350, 340, 100, 20], 'Value', '0,0,0');
     x0EditField = uieditfield(dynamicsFig, 'text', 'Position', [350, 320, 100, 20], 'Value', '0,0,0,0,0,0');
     tf = uieditfield(dynamicsFig, 'text', 'Position', [350, 300, 50, 20], 'Value', '5');
     tf = str2num(tf.Value);
     tspan = [0 tf]; % Final simulation time
 
-    maxStepField = uieditfield(dynamicsFig, 'text', 'Position', [100, 220, 100, 20], 'Value', '0.1');
-    relTolField = uieditfield(dynamicsFig, 'text', 'Position', [100, 200, 100, 20], 'Value', '1e-4');
-    absTolField = uieditfield(dynamicsFig, 'text', 'Position', [100, 180, 100, 20], 'Value', '1e-5');
+    maxStepField = uieditfield(dynamicsFig, 'text', 'Position', [100, 200, 100, 20], 'Value', '0.1');
+    relTolField = uieditfield(dynamicsFig, 'text', 'Position', [100, 180, 100, 20], 'Value', '1e-4');
+    absTolField = uieditfield(dynamicsFig, 'text', 'Position', [100, 160, 100, 20], 'Value', '1e-5');
 
     % button to update the equations with the new values
     runSimButton = uibutton(dynamicsFig, 'Position', [120, 10, 100, 22], 'Text', 'Run Simulation', 'ButtonPushedFcn', @(btn,event) runSimButton_Callback(...
@@ -351,6 +359,8 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
         MassMIEditField, ...
         IntertiaLIEditField, ...
         IntertiaMIEditField, ...
+        FrictionSEditField, ...
+        FrictionVEditField, ...
         JointLengths, ...
         CenterOfMassLengths,...
         q, ...
@@ -391,6 +401,8 @@ function runSimButton_Callback( ...
     MassMIEditField, ...
     IntertiaLIEditField, ...
     IntertiaMIEditField, ...
+    FrictionSEditField, ...
+    FrictionVEditField, ...
     JointLengths, ...
     CenterOfMassLengths,...
     q, ...
@@ -412,6 +424,9 @@ function runSimButton_Callback( ...
     MassMI_Val = str2num(MassMIEditField.Value);
     IntertiaLI_Val = str2num(IntertiaLIEditField.Value);
     IntertiaMI_Val = str2num(IntertiaMIEditField.Value);
+    FrictionS_Val = str2num(FrictionSEditField.Value);
+    FrictionV_Val = str2num(FrictionVEditField.Value);
+    disp(FrictionV_Val)
     maxStep_Val = str2num(maxStepField.Value);
     relTol_Val = str2num(relTolField.Value);
     absTol_Val = str2num(absTolField.Value);
@@ -419,8 +434,8 @@ function runSimButton_Callback( ...
     % Substitute the values into the equations
     for i = 1:NumberOfJoints
         eqs(i) = subs(Tao(i),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
-                    str2sym(IntertiaMI_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
-                    [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,JointLengths,CenterOfMassLengths]);
+                    str2sym(IntertiaMI_Sym),str2sym(FrictionS_Sym),str2sym(FrictionV_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
+                    [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,FrictionS_Val,FrictionV_Val,JointLengths,CenterOfMassLengths]);
     end
     
     % Display the updated equations

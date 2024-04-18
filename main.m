@@ -193,7 +193,6 @@ function runButton_Callback(dhTable,dropdown)
         IntertiaMI_Val(i) = 1;
         IntertiaMI_Sym(i) = "I_m"+i;
         %This will change with time lol it will be GUI I promise
-        disp(JointSymbolic(i))
         %Assume joints are real.
         assume(str2sym(q(i)), "real");
         %Assume joints lengths are positive lol

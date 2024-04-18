@@ -273,6 +273,10 @@ function runButton_Callback(dhTable,dropdown)
 
     end
 
+    % preallocate Q_Val and R_Val in workspace as empty
+    Q_Val = [];
+    R_Val = [];
+
     % send to workspace for ode45 stuff
     assignin('base', 'Tao', Tao);
     assignin('base', 'NumberOfJoints', NumberOfJoints);
@@ -290,6 +294,8 @@ function runButton_Callback(dhTable,dropdown)
     assignin('base', 'q', q);
     assignin('base', 'qd', qd);
     assignin('base', 'qdd', qdd);
+    assignin('base', 'Q_Val', Q_Val);
+    assignin('base', 'R_Val', R_Val);
 
 end
 

@@ -4,7 +4,11 @@ function dxdt = systemDynamics(t, x, u, A, B, FrictionV_Sym, FrictionV_Val, xd, 
     % We need to update all FrictionV_Sym to FrictionV_Val*sign(qdot) in the A matrix if FricitonV_Sym exists in the A matrix
     % We need to update all FrictionV_Sym to FrictionV_Val*sign(qdot) in the B matrix if FricitonV_Sym exists in the B matrix
     % qdot is the x y z of the velocity of the system
-    qdot = x(4:6);
+    NumberOfJoints = size(B, 2); % number of joints in the system
+    qdot = x(((NumberOfJoints*2)/2)+1:NumberOfJoints*2); % velocity of the system
+
+    % Capture the acceleration of the system
+    % qddot = diff(qdot, t); % acceleration of the system
 
     % Substitute the variables in A
     for i = 1:size(A, 1)

@@ -221,10 +221,10 @@ function runButton_Callback(dhTable,dropdown)
         JOMi(:,:,i) = Joj_Mi(i,NumberOfJoints,JointTypes,TransMats,str2sym(Kr_Sym(i)));
     end
 
-    %JPLi
-    %JOLi
-    %JPMi
-    %JOMi
+    % JPLi
+    % JOLi
+    % JPMi
+    % JOMi
 
     %% Calculating B
     % (M_LI,M_MI,JP_LI,JO_LI,I_LI,I_MI,Trans,JP_MI,JO_MI,Num)
@@ -239,7 +239,7 @@ function runButton_Callback(dhTable,dropdown)
     %% Calculating Gravity
     % (GDir, M_L,M_M,JP_L,JP_M,Num,g)
     G = FindG(GravityDirection,MassLI_Sym,MassMI_Sym,JPLi,JPMi,NumberOfJoints,9.81);
-    simplify(G)
+    % simplify(G)
 
     %% Friction 
     for i = 1:NumberOfJoints
@@ -312,7 +312,7 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
     % Add UI controls to the new figure window as needed
     % Add labels for instructions
     uilabel(dynamicsFig, 'Text', 'Each comma seperated value corresponds to each joint in series. ', 'Position', [20, 395, 400, 22]);
-    uilabel(dynamicsFig, 'Text', 'Provide the Values for the Following ', 'Position', [40, 360, 400, 22]);
+    uilabel(dynamicsFig, 'Text', 'Provide the Values for the Following. Note: X0 position or velocity must be non zero ', 'Position', [40, 360, 500, 22]);
     
     % Add labels for each field
     uilabel(dynamicsFig, 'Text', 'Gear Ratios:', 'Position', [10, 340, 300, 20]);
@@ -335,16 +335,16 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
 
     % Make a ui field to fill in for Kr MassLI MassMI IntertiaLI IntertiaMI center of mass lengths
     KrEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 340, 100, 20], 'Value', '1,1,1');
-    MassLIEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 320, 100, 20], 'Value', '1,1,1');
-    MassMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 300, 100, 20], 'Value', '1,1,1');
+    MassLIEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 320, 100, 20], 'Value', '2,2,2');
+    MassMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 300, 100, 20], 'Value', '2,2,2');
     IntertiaLIEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 280, 100, 20], 'Value', '1,1,1');
     IntertiaMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 260, 100, 20], 'Value', '1,1,1');
-    FrictionSEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 240, 100, 20], 'Value', '1,1,1');
-    FrictionVEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 220, 100, 20], 'Value', '1,1,1');
+    FrictionSEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 240, 100, 20], 'Value', '0.05,0.05,0.05');
+    FrictionVEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 220, 100, 20], 'Value', '0.05,0.05,0.05');
 
     uEditField = uieditfield(dynamicsFig, 'text', 'Position', [455, 340, 80, 20], 'Value', '0,0,0');
     x0EditField = uieditfield(dynamicsFig, 'text', 'Position', [455, 320, 80, 20], 'Value', '0,0,0,0,0,0');
-    tf = uieditfield(dynamicsFig, 'text', 'Position', [455, 300, 50, 20], 'Value', '5');
+    tf = uieditfield(dynamicsFig, 'text', 'Position', [455, 300, 50, 20], 'Value', '4');
 
     maxStepField = uieditfield(dynamicsFig, 'text', 'Position', [120, 170, 100, 20], 'Value', '0.1');
     relTolField = uieditfield(dynamicsFig, 'text', 'Position', [120, 150, 100, 20], 'Value', '1e-4');
@@ -508,7 +508,13 @@ function runSimButton_Callback( ...
     maxStep_Val = str2num(maxStepField.Value);
     relTol_Val = str2num(relTolField.Value);
     absTol_Val = str2num(absTolField.Value);
+    
+    % I need to run user input checks to make sure the dimensions are correct for the number of joints in the system
 
+    % for the number of joints in the system check the size of each user input and send an error message back to the user if the size is incorrect for a particular input
+
+
+    
     % Substitute the values into the equations
     for i = 1:NumberOfJoints
         eqs(i) = subs(Tao(i),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
@@ -542,14 +548,14 @@ function runSimButton_Callback( ...
     % Define the state variables
     for i = 1:NumberOfJoints
         x(i) = q(i);
-        x(i+3) = qd(i);
+        x(i+NumberOfJoints) = qd(i);
         
         eqs(i) = subs(eqs(i), TaoSyms(i), u_sym(i));
         % disp('Substituted Equation:');
         % disp(eqs(i));
 
         dx(i) = qd(i);
-        dx(i+3) = simplify(solve(eqs(i), qdd(i)));
+        dx(i+NumberOfJoints) = simplify(solve(eqs(i), qdd(i)));
 
         % x0(i) = 0; % Initial joint angle for all joints
         % x0(i+NumberOfJoints) = 0; % Initial joint velocity for all joints
@@ -572,14 +578,14 @@ function runSimButton_Callback( ...
     x0 = str2num(x0EditField.Value);
     x0 = transpose(x0);
 
-    % disp('State Variables:')
-    % disp(x)
-    % disp('Initial Conditions:')
-    % disp(x0)
-    % disp('State Matrix (A):')
-    % disp(A)
-    % disp('Input Matrix (B):')
-    % disp(B)
+    disp('State Variables:')
+    disp(x)
+    disp('Initial Conditions:')
+    disp(x0)
+    disp('State Matrix (A):')
+    disp(A)
+    disp('Input Matrix (B):')
+    disp(B)
 
     % LQR Stuff
     % check if the LQR checkbox is checked

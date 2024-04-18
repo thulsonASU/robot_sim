@@ -239,7 +239,7 @@ function runButton_Callback(dhTable,dropdown)
     %% Calculating Gravity
     % (GDir, M_L,M_M,JP_L,JP_M,Num,g)
     G = FindG(GravityDirection,MassLI_Sym,MassMI_Sym,JPLi,JPMi,NumberOfJoints,9.81);
-    %G
+    simplify(G)
 
     %% Friction 
     for i = 1:NumberOfJoints

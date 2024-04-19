@@ -312,7 +312,7 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
     % Add UI controls to the new figure window as needed
     % Add labels for instructions
     uilabel(dynamicsFig, 'Text', 'Each comma seperated value corresponds to each joint in series. ', 'Position', [20, 395, 400, 22]);
-    uilabel(dynamicsFig, 'Text', 'Provide the Values for the Following. Note: X0 position or velocity must be non zero ', 'Position', [40, 360, 500, 22]);
+    uilabel(dynamicsFig, 'Text', 'Provide the Values for the Following. Note: x0 position or velocity must be non zero ', 'Position', [40, 360, 500, 22]);
     
     % Add labels for each field
     uilabel(dynamicsFig, 'Text', 'Gear Ratios:', 'Position', [10, 340, 300, 20]);
@@ -426,7 +426,7 @@ function lqrEditButton_Callback(dynamicsFig)
 
     % Add text above the table
     uilabel(lqrFig, 'Text', 'Enter the LQR Gains for the Control Law', 'Position', [20, 170, 300, 20]);
-    uilabel(lqrFig, 'Text', 'Assume all states and energy gains are equally important', 'Position', [20, 150, 400, 20]);
+    uilabel(lqrFig, 'Text', 'Assume velocity is five times more important than torque', 'Position', [20, 150, 400, 20]);
 
     uilabel(lqrFig, 'Text', 'How important are the states? (Q):', 'Position', [20, 120, 300, 20]);
     uilabel(lqrFig, 'Text', 'How important is energy consumption? (R):', 'Position', [20, 100, 300, 20]);
@@ -508,18 +508,55 @@ function runSimButton_Callback( ...
     maxStep_Val = str2num(maxStepField.Value);
     relTol_Val = str2num(relTolField.Value);
     absTol_Val = str2num(absTolField.Value);
+    % User defined initial conditions
+    x0 = str2num(x0EditField.Value);
+    x0 = transpose(x0);
+    % Torques
+    u = str2num(uEditField.Value);
+    u = transpose(u);
     
     % I need to run user input checks to make sure the dimensions are correct for the number of joints in the system
-
     % for the number of joints in the system check the size of each user input and send an error message back to the user if the size is incorrect for a particular input
+    if length(Kr_Val) ~= NumberOfJoints
+        errordlg('The number of gear ratios does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(MassLI_Val) ~= NumberOfJoints
+        errordlg('The number of link masses does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(MassMI_Val) ~= NumberOfJoints
+        errordlg('The number of motor masses does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(IntertiaLI_Val) ~= NumberOfJoints
+        errordlg('The number of link inertias does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(IntertiaMI_Val) ~= NumberOfJoints
+        errordlg('The number of motor inertias does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(FrictionS_Val) ~= NumberOfJoints
+        errordlg('The number of static frictions does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(FrictionV_Val) ~= NumberOfJoints
+        errordlg('The number of viscosity frictions does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(JointLengths) ~= NumberOfJoints
+        errordlg('The number of joint lengths does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(CenterOfMassLengths) ~= NumberOfJoints
+        errordlg('The number of center of mass lengths does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(u) ~= NumberOfJoints
+        errordlg('The number of torques does not match the number of joints in the system.', 'Error', 'modal');
+        return;
+    elseif length(x0) ~= NumberOfJoints*2
+        errordlg('The number of initial conditions does not match the number of joints in the system. x0 is defined as [position, velocity] for each joint.', 'Error', 'modal');
+        return;
+    end
 
-
-    
     % Substitute the values into the equations
     for i = 1:NumberOfJoints
         eqs(i) = subs(Tao(i),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
-                    str2sym(IntertiaMI_Sym),str2sym(FrictionS_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
-                    [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,FrictionS_Val,JointLengths,CenterOfMassLengths]);
+                    str2sym(IntertiaMI_Sym),str2sym(FrictionV_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
+                    [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,FrictionV_Val,JointLengths,CenterOfMassLengths]);
     end
     
     disp('Updated Equations from User Input:')
@@ -570,22 +607,14 @@ function runSimButton_Callback( ...
     % Define the input matrix (B)
     B = jacobian(dx, u_sym);
 
-    % Torques
-    u = str2num(uEditField.Value);
-    u = @(t) transpose(u);
-
-    % User defined initial conditions
-    x0 = str2num(x0EditField.Value);
-    x0 = transpose(x0);
-
-    disp('State Variables:')
-    disp(x)
-    disp('Initial Conditions:')
-    disp(x0)
-    disp('State Matrix (A):')
-    disp(A)
-    disp('Input Matrix (B):')
-    disp(B)
+    % disp('State Variables:')
+    % disp(x)
+    % disp('Initial Conditions:')
+    % disp(x0)
+    % disp('State Matrix (A):')
+    % disp(A)
+    % disp('Input Matrix (B):')
+    % disp(B)
 
     % LQR Stuff
     % check if the LQR checkbox is checked
@@ -601,28 +630,42 @@ function runSimButton_Callback( ...
             Q = Q_Val*eye(NumberOfJoints*2);
             R = R_Val*eye(NumberOfJoints);
         end
+
+        % We want the controller to prioritize positions over velocities so we multiply the first half of Q and R by 2 which represent the position weights
+        % change the first half of Q to 2 times its value
+        for i = 1:NumberOfJoints
+            Q(i,i) = 5*Q(i,i);
+        end
+
+        % % change the first half of R to 2 times its value
+        % for i = 1:(NumberOfJoints/2)
+        %     R(i,i) = R(i,i)/2;
+        % end
     else
         % Q and R are zero
         Q = 0;
         R = 0;
     end
 
+    % x desired for tracker (DEPRECIATED)
+    % the lqr function works best as a regulator, not a tracker
     % Get x desired from the initial conditions
     % only take the first half of x0
-    xd = x0(1:NumberOfJoints);
-    % update last half of x0 to 0
-    xd = [xd; zeros(NumberOfJoints, 1)];
+    % xd = x0(1:NumberOfJoints);
+    % % update last half of x0 to 0
+    % xd = [xd; zeros(NumberOfJoints, 1)];
 
     % Make some of these options user inputs :) (Done did it)
     options = odeset('MaxStep',maxStep_Val,'RelTol',relTol_Val,'AbsTol',absTol_Val*ones(1,(NumberOfJoints*2)));
 
     tf = str2num(tf.Value);
     tspan = [0 tf]; % Final simulation time
+    u = @(t) u; % Make u a function of time
 
     % Solve the differential equations ode45 for state space
-    [t, x] = ode45(@(t, x) systemDynamics(t, x, u(t), A, B, FrictionV_Sym, FrictionV_Val, xd, Q, R, lqrCheckBox.Value), tspan, x0, options);
+    [t, x] = ode45(@(t, x) systemDynamics(t, tf, x, u(t), A, B, FrictionS_Sym, FrictionS_Val, Q, R, lqrCheckBox.Value), tspan, x0, options);
 
-    % Positions of the joints over time
+    % pos of the joints over time
     pos = zeros(NumberOfJoints, length(t));
     for i = 1:NumberOfJoints
         pos(i,:) = x(:,i);
@@ -634,9 +677,34 @@ function runSimButton_Callback( ...
         vel(i,:) = x(:,i+NumberOfJoints);
     end
 
-    setappdata(dynamicsFig, 't', t);
+    tSpace = linspace(0, tf, size(vel, 2));
+    % Calculate acceleration
+    acc = zeros(NumberOfJoints, length(t));
+    for i = 1:NumberOfJoints
+        vel_diff = [0, diff(vel(i, :))];
+        time_diff = diff(tSpace);
+        acc_diff = vel_diff ./ [time_diff, 1];  % Append 1 to make time_diff the same size as vel_diff
+        acc(i, :) = acc_diff;
+    end
+
+    % % get accMatrix from the workspace
+    % acc = evalin('base', 'accMatrix');
+    % % Get the original time vector for the acceleration data
+    % t_acc = linspace(0, tf, size(acc, 2));
+    
+    % % Interpolate the acceleration data to match the size of t
+    % acc_interp = zeros(NumberOfJoints, length(t));
+    % for i = 1:NumberOfJoints
+    %     acc_interp(i, :) = interp1(t_acc, acc(i, :), t, 'linear', 'extrap');
+    % end
+
+    % % Now acc_interp is the interpolated version of acc
+    % acc = acc_interp;
+
+    setappdata(dynamicsFig, 'tSpace', tSpace);
     setappdata(dynamicsFig, 'pos', pos);
     setappdata(dynamicsFig, 'vel', vel);
+    setappdata(dynamicsFig, 'acc', acc);
 
     disp('Simulation complete');
 end
@@ -644,25 +712,27 @@ end
 % plotting function callback for pos vel acc
 function plotButton_Callback(dynamicsFig)
     % Retrieve the results
-    t = getappdata(dynamicsFig, 't');
+    t = getappdata(dynamicsFig, 'tSpace');
     pos = getappdata(dynamicsFig, 'pos');
     vel = getappdata(dynamicsFig, 'vel');
+    acc = getappdata(dynamicsFig, 'acc');
     
     % pos is the positions of each joint over time
     % vel is the velocities of each joint over time
+    % acc is the accelerations of each joint for each time step
 
     % plotting needs to be robust for the number of joints
     % plot the positions of each joint over time
 
     % Create a new figure window with a larger size
-    plotFig = uifigure('Name', 'Dynamics Simulation Plots', 'NumberTitle', 'off', 'Position', [100 100 625 400]);
+    plotFig = uifigure('Name', 'Dynamics Simulation Plots', 'NumberTitle', 'off', 'Position', [100 100 600 500]);
 
     % Add a button to close the plot figure
     closeButton = uibutton(plotFig, 'Position', [10, 10, 100, 22], 'Text', 'Close', 'ButtonPushedFcn', @(btn,event) close(plotFig));
     closeButton.BackgroundColor = [0.7 0.2 0.2]; % Red color
 
     % Create axes for the position plot
-    posAxes = uiaxes(plotFig, 'Position', [50 220 500 125]);
+    posAxes = uiaxes(plotFig, 'Position', [50 345 500 125]);
     % Plot the positions of each joint over time
     legendEntries = cell(1, size(pos, 1)); % Initialize cell array for legend entries
     for i = 1:size(pos, 1)
@@ -676,7 +746,7 @@ function plotButton_Callback(dynamicsFig)
     ylabel(posAxes, 'Position (rad)');
 
     % Create axes for the velocity plot
-    velAxes = uiaxes(plotFig, 'Position', [50 80 500 125]);
+    velAxes = uiaxes(plotFig, 'Position', [50 205 500 125]);
     % Plot the velocities of each joint over time
     legendEntries = cell(1, size(vel, 1)); % Initialize cell array for legend entries
     for i = 1:size(vel, 1)
@@ -688,6 +758,21 @@ function plotButton_Callback(dynamicsFig)
     title(velAxes, 'Joint Velocities Over Time');
     xlabel(velAxes, 'Time (s)');
     ylabel(velAxes, 'Velocity (rad/s)');
+
+    % Create axes for the acceleration plot
+    accAxes = uiaxes(plotFig, 'Position', [50 65 500 125]);
+    % Plot the accelerations of each joint over time
+    legendEntries = cell(1, size(acc, 1)); % Initialize cell array for legend entries
+    for i = 1:size(acc, 1)
+        plot(accAxes, t, acc(i,:));
+        hold(accAxes, 'on');
+        legendEntries{i} = sprintf('Joint %d', i); % Add entry to legend
+    end
+    legend(accAxes, legendEntries); % Add legend to plot
+    title(accAxes, 'Joint Accelerations Over Time');
+    xlabel(accAxes, 'Time (s)');
+    ylabel(accAxes, 'Acceleration (rad/s^2)');
+
 end
 
 % END OF TYLERS DYNAMICAL WONDERLAND

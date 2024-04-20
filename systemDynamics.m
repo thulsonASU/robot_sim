@@ -99,7 +99,6 @@ function dxdt = systemDynamics(t, tf, x, u, A, B, FrictionS_Sym, FrictionS_Val, 
     % round t to the nearest 0.1
     t_rounded = round(t, 1);
     
-    % print dxdt when time is approximately a whole number
     if abs(mod(t_rounded, 0.25)) < 1e-6  % adjust the tolerance as needed
         disp('Running...')
         disp('dxdt at time t: ');

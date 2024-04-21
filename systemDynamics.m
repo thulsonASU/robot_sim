@@ -80,7 +80,7 @@ function dxdt = systemDynamics(t, tf, x, u, A, B, FrictionS_Sym, FrictionS_Val, 
     if mod(t_rounded, 0.25) <= 1e-6
         % Update the progress bar
         progress = t / tf;
-        updateProgressBar(progress, dynamicsFig);
+        updateProgressBar(dynamicsFig, progress);
     end
 
 end

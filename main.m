@@ -843,7 +843,13 @@ function startAnimation(q,x,y,z)
     figure;
     hold on;  % Hold the current plot
     h = gobjects(1, length(q));  % Initialize array of graphics objects
-    l = gobjects(1, length(q)-1);  % Initialize array of line objects
+    l = gobjects(1, length(q));  % Initialize array of line objects
+
+    % Frame 0
+    plot3(0, 0, 0, 'o-');
+    % Plot a line from the origin to the first link and store the line object
+    originLine = line([0, x(1, 1)], [0, y(1, 1)], [0, z(1, 1)], 'Color', 'k');
+
     for i = 1:length(q)
         h(i) = plot3(x(i, 1), y(i, 1), z(i, 1), 'o-');  % Plot each link
     end
@@ -858,18 +864,33 @@ function startAnimation(q,x,y,z)
     ylim([min(y(:))-1, max(y(:))+1]);
     zlim([min(z(:))-1, max(z(:))+1]);
 
-    % Set the view to orthographic
+    % Set the view to top down
     view(3);
+
+    % Generate legend labels
+    labels = cell(1, length(q) + 1);
+    labels{1} = 'Origin';
+    for i = 1:length(q)
+        labels{i + 1} = sprintf('Link %d', i);
+    end
+
+    % Add a legend
+    legend(labels, 'Location', 'best');
 
     hold off;  % Release the current plot
     grid on;
     xlabel('X');
     ylabel('Y');
     zlabel('Z');
-    title('Joint Space Animation');
+    title('Robot Operational Space Animation');
 
     % Animation loop
     for k = 2:size(x, 2)
+        % Update the line from the origin to the first link
+        originLine.XData = [0, x(1, k)];
+        originLine.YData = [0, y(1, k)];
+        originLine.ZData = [0, z(1, k)];
+
         for i = 1:length(q)
             % Update plot data for each link
             h(i).XData = x(i, k);
@@ -887,8 +908,6 @@ function startAnimation(q,x,y,z)
         % Update the plot
         drawnow;
 
-        % Pause for a while to control the animation speed
-        % pause(0.1);
     end
 end
 

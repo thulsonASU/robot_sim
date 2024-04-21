@@ -1,4 +1,4 @@
-function updateProgressBar(progress, uiFigure)
+function updateProgressBar(uiFigure, progress)
     % Create a persistent variable for the progress dialog
     persistent pd
 
@@ -21,5 +21,6 @@ function updateProgressBar(progress, uiFigure)
     if progress >= 1
         close(pd);
         pd = [];
+        disp('Almost done!');
     end
 end

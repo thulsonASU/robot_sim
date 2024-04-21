@@ -313,9 +313,11 @@ function runButton_Callback(dhTable,dropdown)
     assignin('base', 'qdd', qdd);
     assignin('base', 'Q_Val', Q_Val);
     assignin('base', 'R_Val', R_Val);
+    assignin('base', 'TransMats_Joint2Joint', TransMats_Joint2Joint);
 
     % call the dynamics button callback
-    dynamicsButton_Callback( ...
+    dynamicsButton_Callback(...
+    evalin('base', 'TransMats_Joint2Joint'), ...
     evalin('base', 'NumberOfJoints'), ...
     evalin('base', 'Tao'), ...
     evalin('base', 'Kr_Sym'), ...
@@ -339,7 +341,7 @@ end
 % = TYLERS DYNAMICAL WONDERLAND STARTS BELOW =
 % ============================================
 
-function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI_Sym, IntertiaLI_Sym, IntertiaMI_Sym, FrictionS_Sym, FrictionV_Sym, JointSymbolic, CenterOfMassSymbolic, JointLengths, CenterOfMassLengths, q, qd, qdd)
+function dynamicsButton_Callback(TransMats_Joint2Joint, NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI_Sym, IntertiaLI_Sym, IntertiaMI_Sym, FrictionS_Sym, FrictionV_Sym, JointSymbolic, CenterOfMassSymbolic, JointLengths, CenterOfMassLengths, q, qd, qdd)
     % Create a new figure window
     dynamicsFig = uifigure('Name', 'Dynamics Simulation', 'NumberTitle', 'off');
 
@@ -361,7 +363,7 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
     uilabel(dynamicsFig, 'Text', 'Viscosity Frictions (N·s/m^2):', 'Position', [10, 220, 300, 20]);
 
     uilabel(dynamicsFig, 'Text', 'Define u (initial torque):', 'Position', [280, 340, 200, 20]);
-    uilabel(dynamicsFig, 'Text', 'Define x0 (initial pos and vel):', 'Position', [280, 320, 200, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define x0 (pos and vel in rads):', 'Position', [280, 320, 200, 20]);
     uilabel(dynamicsFig, 'Text', 'Final simulation time (seconds):','Position', [280, 300, 300, 20]);
 
     % ODE45 Options
@@ -393,6 +395,7 @@ function dynamicsButton_Callback(NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI
 
     % button to update the equations with the new values
     runSimButton = uibutton(dynamicsFig, 'Position', [120, 10, 100, 22], 'Text', 'Run Simulation', 'ButtonPushedFcn', @(btn,event) runSimButton_Callback(...
+        TransMats_Joint2Joint,...
         dynamicsFig, ...    
         NumberOfJoints, ...
         Tao, ...
@@ -496,6 +499,7 @@ end
 %     [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,JointLengths,CenterOfMassLengths]);
 % function callback for substituting the values into the equations using a button
 function runSimButton_Callback( ...
+    TransMats_Joint2Joint, ...
     dynamicsFig, ...
     NumberOfJoints, ...
     Tao, ...
@@ -704,7 +708,7 @@ function runSimButton_Callback( ...
     u = @(t) u; % Make u a function of time
 
     % Solve the differential equations ode45 for state space
-    [t, x] = ode45(@(t, x) systemDynamics(t, tf, x, u(t), A, B, FrictionS_Sym, FrictionS_Val, Q, R, lqrCheckBox.Value), tspan, x0, options);
+    [t, x] = ode45(@(t, x) systemDynamics(t, tf, x, u(t), A, B, FrictionS_Sym, FrictionS_Val, Q, R, lqrCheckBox.Value, dynamicsFig), tspan, x0, options);
 
     % pos of the joints over time
     pos = zeros(NumberOfJoints, length(t));
@@ -733,12 +737,12 @@ function runSimButton_Callback( ...
     setappdata(dynamicsFig, 'vel', vel);
     setappdata(dynamicsFig, 'acc', acc);
 
-    plotButton_Callback(dynamicsFig);
+    plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic, JointLengths);
     disp('Simulation complete');
 end
 
 % plotting function callback for pos vel acc
-function plotButton_Callback(dynamicsFig)
+function plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic, JointLengths)
     % Retrieve the results
     t = getappdata(dynamicsFig, 'tSpace');
     pos = getappdata(dynamicsFig, 'pos');
@@ -801,6 +805,91 @@ function plotButton_Callback(dynamicsFig)
     xlabel(accAxes, 'Time (s)');
     ylabel(accAxes, 'Acceleration (rad/s^2)');
 
+    % Initialize link position vectors
+    x = zeros(length(q), size(pos, 2));
+    y = zeros(length(q), size(pos, 2));
+    z = zeros(length(q), size(pos, 2));
+
+    % Calculate position of each link for every end effector position
+    for k = 1:size(pos, 2)
+        % joint positions
+        pos_current = pos(:, k);
+
+        TransSyms = [q, str2sym(JointSymbolic)];
+        TransVals = [transpose(pos_current), JointLengths];
+
+        % Calculate position of each link
+        for i = 1:length(q)
+            % Extract the position from the transformation matrix
+            positions = TransMats_Joint2Joint(1:3, 4, i);
+
+            % Substitute symbolic variables with their corresponding numeric values
+            positions = subs(positions, TransSyms, TransVals);
+
+            x(i, k) = positions(1);
+            y(i, k) = positions(2);
+            z(i, k) = positions(3);
+        end
+    end
+
+    % currentFig = gcf;
+    % Create a UI alert dialog box
+    uialert(plotFig, 'Press okay to playback dynamics', 'Start Animation', 'Icon', 'info', 'CloseFcn', @(~,~) startAnimation(q,x,y,z));
+end
+
+% Define the function to start the animation
+function startAnimation(q,x,y,z)
+    % Plot robot
+    figure;
+    hold on;  % Hold the current plot
+    h = gobjects(1, length(q));  % Initialize array of graphics objects
+    l = gobjects(1, length(q)-1);  % Initialize array of line objects
+    for i = 1:length(q)
+        h(i) = plot3(x(i, 1), y(i, 1), z(i, 1), 'o-');  % Plot each link
+    end
+
+    % Plot lines connecting the joints
+    for i = 1:length(q)-1
+        l(i) = line([x(i, 1), x(i+1, 1)], [y(i, 1), y(i+1, 1)], [z(i, 1), z(i+1, 1)], 'Color', 'k');
+    end
+
+    % Set x, y, and z limits
+    xlim([min(x(:))-1, max(x(:))+1]);
+    ylim([min(y(:))-1, max(y(:))+1]);
+    zlim([min(z(:))-1, max(z(:))+1]);
+
+    % Set the view to orthographic
+    view(3);
+
+    hold off;  % Release the current plot
+    grid on;
+    xlabel('X');
+    ylabel('Y');
+    zlabel('Z');
+    title('Joint Space Animation');
+
+    % Animation loop
+    for k = 2:size(x, 2)
+        for i = 1:length(q)
+            % Update plot data for each link
+            h(i).XData = x(i, k);
+            h(i).YData = y(i, k);
+            h(i).ZData = z(i, k);
+        end
+
+        % Update the lines connecting the joints
+        for i = 1:length(q)-1
+            l(i).XData = [x(i, k), x(i+1, k)];
+            l(i).YData = [y(i, k), y(i+1, k)];
+            l(i).ZData = [z(i, k), z(i+1, k)];
+        end
+
+        % Update the plot
+        drawnow;
+
+        % Pause for a while to control the animation speed
+        % pause(0.1);
+    end
 end
 
 % END OF TYLERS DYNAMICAL WONDERLAND

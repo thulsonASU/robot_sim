@@ -1,4 +1,4 @@
-function dxdt = systemDynamics(t, tf, x, u, A, B, FrictionS_Sym, FrictionS_Val, Q, R, lqr_control_law)
+function dxdt = systemDynamics(t, tf, x, u, A, B, FrictionS_Sym, FrictionS_Val, Q, R, lqr_control_law, dynamicsFig)
 
     % FrictionS_Sym is the symbolic representation of the Fv friction from the governing equations the value is the user defined input
     % We need to update all FrictionS_Sym to FrictionS_Val*sign(qdot) in the A matrix if FricitonV_Sym exists in the A matrix
@@ -76,40 +76,11 @@ function dxdt = systemDynamics(t, tf, x, u, A, B, FrictionS_Sym, FrictionS_Val, 
     % calculate the state space
     dxdt = A*x + B*u;
 
-    %ode45 uses the state space model to calculate the next state
-    %delta_t is not consistent
-    %I need to calculate a new delta_t based on the current time
-    
-    % persistent accMatrix acc t_prev firstPass;
-    % if isempty(firstPass)
-    %     t_prev = 0;
-    %     accMatrix = [];
-    %     firstPass = 1;
-    % end
-    
-    % % calculate the next time step
-    % delta_t = t - t_prev;
-    % t_prev = t;
-
-    % % first two elements of dxdt are the velocity of the system
-    % % calculate the acceleration of the system
-    % acc = qdot/delta_t;
-    % accMatrix = [accMatrix, acc];
-
-    % round t to the nearest 0.1
-    t_rounded = round(t, 1);
-    
-    if abs(mod(t_rounded, 0.25)) < 1e-6  % adjust the tolerance as needed
-        disp('Running...')
-        disp('dxdt at time t: ');
-        disp(t);
-        disp(transpose(dxdt));
+    t_rounded = round(t, 2);
+    if mod(t_rounded, 0.25) <= 1e-6
+        % Update the progress bar
+        progress = t / tf;
+        updateProgressBar(progress, dynamicsFig);
     end
-
-    % if t == tf
-    %     disp('Time Matrix Updated in Workspace.')
-    %     assignin('base', 'accMatrix', accMatrix);
-    %     assignin('base', 't', t);
-    % end
 
 end

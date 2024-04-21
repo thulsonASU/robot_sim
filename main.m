@@ -552,8 +552,7 @@ function runSimButton_Callback( ...
     u = str2num(uEditField.Value);
     u = transpose(u);
     
-    % I need to run user input checks to make sure the dimensions are correct for the number of joints in the system
-    % for the number of joints in the system check the size of each user input and send an error message back to the user if the size is incorrect for a particular input
+    % user input checks to make sure the dimensions are correct for the number of joints in the system
     if length(Kr_Val) ~= NumberOfJoints
         errordlg('The number of gear ratios does not match the number of joints in the system.', 'Error', 'modal');
         return;
@@ -589,18 +588,48 @@ function runSimButton_Callback( ...
         return;
     end
 
-    % Substitute the values into the equations
+    % This is the dumbest thing I have ever had to do in order to properly 
+    % substitute in all symbolic variables with the correct user input values
+
+    % define sym for center of mass symbolic as L1, L2, L3, etc. for number of joints so the lengths are equivalent to the number of user inputs
     for i = 1:NumberOfJoints
-        eqs(i) = subs(Tao(i),[str2sym(Kr_Sym),str2sym(MassLI_Sym),str2sym(MassMI_Sym),str2sym(IntertiaLI_Sym),...
-                    str2sym(IntertiaMI_Sym),str2sym(FrictionV_Sym),str2sym(JointSymbolic),str2sym(CenterOfMassSymbolic)],...
-                    [Kr_Val,MassLI_Val,MassMI_Val,IntertiaLI_Val,IntertiaMI_Val,FrictionV_Val,JointLengths,CenterOfMassLengths]);
+        CenterOfMassSymbolic(i) = "L"+i;
+    end
+
+    TaoSyms = sym('Tao_', [NumberOfJoints, 1]);
+    u_sym = sym('u', [NumberOfJoints, 1]);
+    % user input array
+    user_input = [Kr_Val, MassLI_Val, MassMI_Val, IntertiaLI_Val, IntertiaMI_Val, FrictionS_Val, FrictionV_Val, JointLengths, CenterOfMassLengths];
+    % corresponding symbolic variables
+    user_input_sym = [str2sym(Kr_Sym), str2sym(MassLI_Sym), str2sym(MassMI_Sym), str2sym(IntertiaLI_Sym), str2sym(IntertiaMI_Sym), str2sym(FrictionS_Sym), str2sym(FrictionV_Sym), str2sym(JointSymbolic), str2sym(CenterOfMassSymbolic)];
+    % append u_sym to user input and TaoSyms to user input syms for number of joints
+    for i = 1:NumberOfJoints
+        user_input = [user_input, u_sym(i)];
+        user_input_sym = [user_input_sym, TaoSyms(i)];
+    end
+
+    for i = 1:NumberOfJoints
+        vars_in_eqs = symvar(Tao(i));
+        % disp('Variables in Equation ' + i + ':');
+        % disp(vars_in_eqs);
+
+        % Update the equations with the user input values based on the vars_in_eqs array referencing the user_input array
+        for j = 1:length(vars_in_eqs)
+            % if vars_in_eqs(j) contains user_input_sym, find the index of the variable in the user_input_sym array
+            if ismember(vars_in_eqs(j), user_input_sym)
+                % find the index of the variable in the user_input_sym array
+                idx = find(vars_in_eqs(j) == user_input_sym);
+                % update the equation with the user input value
+                Tao(i) = subs(Tao(i), vars_in_eqs(j), user_input(idx));
+            end
+        end
     end
     
     disp('Updated Equations from User Input:')
     % Display the updated equations
     for i = 1:NumberOfJoints
         disp(['Equation ' num2str(i) ':']);
-        disp(eqs(i));
+        disp(Tao(i));
     end
 
     % Solve it plz
@@ -613,26 +642,15 @@ function runSimButton_Callback( ...
 
     % preallocate the state variables
     x = sym('x', [NumberOfJoints*2, 1]);
-    u_sym = sym('u', [NumberOfJoints, 1]);
-    TaoSyms = sym('Tao_', [NumberOfJoints, 1]);
     dx = sym('dx', [NumberOfJoints*2, 1]);
-    % preallocate x0 as double
-    % x0 = zeros(NumberOfJoints*2, 1);
 
     % Define the state variables
     for i = 1:NumberOfJoints
         x(i) = q(i);
         x(i+NumberOfJoints) = qd(i);
-        
-        eqs(i) = subs(eqs(i), TaoSyms(i), u_sym(i));
-        % disp('Substituted Equation:');
-        % disp(eqs(i));
 
         dx(i) = qd(i);
-        dx(i+NumberOfJoints) = simplify(solve(eqs(i), qdd(i)));
-
-        % x0(i) = 0; % Initial joint angle for all joints
-        % x0(i+NumberOfJoints) = 0; % Initial joint velocity for all joints
+        dx(i+NumberOfJoints) = simplify(solve(Tao(i), qdd(i)));
 
     end
 
@@ -668,29 +686,15 @@ function runSimButton_Callback( ...
             R = R_Val*eye(NumberOfJoints);
         end
 
-        % We want the controller to prioritize positions over velocities so we multiply the first half of Q and R by 2 which represent the position weights
-        % change the first half of Q to 2 times its value
+        % change the first half of Q to 5 times its value (Velocities)
         for i = 1:NumberOfJoints
             Q(i,i) = 5*Q(i,i);
         end
-
-        % % change the first half of R to 2 times its value
-        % for i = 1:(NumberOfJoints/2)
-        %     R(i,i) = R(i,i)/2;
-        % end
     else
         % Q and R are zero
         Q = 0;
         R = 0;
     end
-
-    % x desired for tracker (DEPRECIATED)
-    % the lqr function works best as a regulator, not a tracker
-    % Get x desired from the initial conditions
-    % only take the first half of x0
-    % xd = x0(1:NumberOfJoints);
-    % % update last half of x0 to 0
-    % xd = [xd; zeros(NumberOfJoints, 1)];
 
     % Make some of these options user inputs :) (Done did it)
     options = odeset('MaxStep',maxStep_Val,'RelTol',relTol_Val,'AbsTol',absTol_Val*ones(1,(NumberOfJoints*2)));
@@ -723,20 +727,6 @@ function runSimButton_Callback( ...
         acc_diff = vel_diff ./ [time_diff, 1];  % Append 1 to make time_diff the same size as vel_diff
         acc(i, :) = acc_diff;
     end
-
-    % % get accMatrix from the workspace
-    % acc = evalin('base', 'accMatrix');
-    % % Get the original time vector for the acceleration data
-    % t_acc = linspace(0, tf, size(acc, 2));
-    
-    % % Interpolate the acceleration data to match the size of t
-    % acc_interp = zeros(NumberOfJoints, length(t));
-    % for i = 1:NumberOfJoints
-    %     acc_interp(i, :) = interp1(t_acc, acc(i, :), t, 'linear', 'extrap');
-    % end
-
-    % % Now acc_interp is the interpolated version of acc
-    % acc = acc_interp;
 
     setappdata(dynamicsFig, 'tSpace', tSpace);
     setappdata(dynamicsFig, 'pos', pos);

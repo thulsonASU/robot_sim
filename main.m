@@ -187,8 +187,6 @@ function runButton_Callback(dhTable,dropdown)
     %TransMats(1:3,3,1) as 1 is the first matrix (T01) and we want Z1
     fprintf("The translational Matrix for T0"+NumberOfJoints+" symbolically:\n\n")
     disp(TransMats(:,:,NumberOfJoints))
-
-
     fprintf("The translational Matrix for T0"+NumberOfJoints+" numerically:\n\n")
     disp(subs(TransMats(:,:,NumberOfJoints),str2sym(JointSymbolic),JointLengths))
 
@@ -239,10 +237,10 @@ function runButton_Callback(dhTable,dropdown)
         JOMi(:,:,i) = Joj_Mi(i,NumberOfJoints,JointTypes,TransMats,str2sym(Kr_Sym(i)));
     end
 
-    % JPLi
-    % JOLi
-    % JPMi
-    % JOMi
+     %JPLi
+     %JOLi
+     %JPMi
+     %JOMi
 
     %% Calculating B
     % (M_LI,M_MI,JP_LI,JO_LI,I_LI,I_MI,Trans,JP_MI,JO_MI,Num)
@@ -257,7 +255,7 @@ function runButton_Callback(dhTable,dropdown)
     %% Calculating Gravity
     % (GDir, M_L,M_M,JP_L,JP_M,Num,g)
     G = FindG(GravityDirection,MassLI_Sym,MassMI_Sym,JPLi,JPMi,NumberOfJoints,9.81);
-    % simplify(G)
+     %simplify(G)
 
     %% Friction 
     for i = 1:NumberOfJoints

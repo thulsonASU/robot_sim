@@ -464,7 +464,7 @@ function indirectImpedanceButton_Callback(dynamicsFig)
 % imp_Kp
 
         for j = 1:length(vars_in_eqs)
-            subs(Tao(i), )
+            %subs(Tao(i), )
         end
     sim('Impedance_Control',tspan)
 end

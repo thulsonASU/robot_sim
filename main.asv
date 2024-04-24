@@ -457,9 +457,8 @@ function indirectImpedanceButton_Callback(dynamicsFig)
     % PUT CODE HERE FOR SIMULINK MODEL
     % Open Simulink model
     open_system('Impedance_Control.slx');
-    
-    F_v = K_r*diag([0.01 0.01])*K_r;
-    
+    FrictionV_Val = K_r*diag([0.01 0.01])*K_r;
+
     % Run Simulink simulation
     sim('Impedance_Control.slx');
 %     M_d = 100*diag([]);
@@ -467,10 +466,10 @@ function indirectImpedanceButton_Callback(dynamicsFig)
 % imp_Kd
 % imp_Kp
 
-        % for j = 1:length(vars_in_eqs)
-            % subs(Tao(i), )
-        % end
-    % sim('Impedance_Control',tspan)
+        for j = 1:length(vars_in_eqs)
+            %subs(Tao(i), )
+        end
+    sim('Impedance_Control',tspan)
 end
 
 % lqrEditButton callback function

@@ -463,10 +463,10 @@ function indirectImpedanceButton_Callback(dynamicsFig)
 % imp_Kd
 % imp_Kp
 
-        for j = 1:length(vars_in_eqs)
-            subs(Tao(i), )
-        end
-    sim('Impedance_Control',tspan)
+        % for j = 1:length(vars_in_eqs)
+            % subs(Tao(i), )
+        % end
+    % sim('Impedance_Control',tspan)
 end
 
 % lqrEditButton callback function

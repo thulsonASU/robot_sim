@@ -455,7 +455,11 @@ end
 function indirectImpedanceButton_Callback(dynamicsFig)
     disp('WIP') % Tatwik and Danis
     % PUT CODE HERE FOR SIMULINK MODEL
+    % Open Simulink model
+    open_system('Impedance_Control.slx');
     
+    % Run Simulink simulation
+    sim('Impedance_Control.slx');
 %     M_d = 100*diag([]);
 %     iM_d = inv(M_d)
 % imp_Kd

@@ -455,13 +455,15 @@ end
 function indirectImpedanceButton_Callback(dynamicsFig)
     disp('WIP') % Tatwik and Danis
     % PUT CODE HERE FOR SIMULINK MODEL
+
+    impedanceGUI = uifigure('Name', 'Impedance Control Simulink Model', 'NumberTitle', 'off');
     % Open Simulink model
-    open_system('Impedance_Control.slx');
+    % open_system('Impedance_Control.slx');
     
-    F_v = K_r*diag([0.01 0.01])*K_r;
+    % F_v = K_r*diag([0.01 0.01])*K_r;
     
     % Run Simulink simulation
-    sim('Impedance_Control.slx');
+    % sim('Impedance_Control.slx');
 %     M_d = 100*diag([]);
 %     iM_d = inv(M_d)
 % imp_Kd

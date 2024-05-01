@@ -69,18 +69,23 @@ function dxdt = systemDynamics(t, tf, x, u, A, B, FrictionS_Sym, FrictionS_Val, 
         % error = x - xd;
         % Get the gain matrix K from LQR
         K = lqr(A, B, Q, R);
-        % calculate the control law
-        u = -K*x; % for some reason it works only as a regulator not a tracker
+        
+        % Get velocity for K
+        [m, n] = size(K); % get the size to get the last 3 rows and columns of K for velocity regulation (Indirectly controls the position)
+        
+        % Get the minimum of m and NumberOfJoints
+        m_min = min(m, NumberOfJoints);
+        % Get the minimum of n and NumberOfJoints
+        n_min = min(n, NumberOfJoints);
+
+        % Calculate the control law
+        u = -K(m-m_min+1:m, n-n_min+1:n)*x(((NumberOfJoints*2)/2)+1:NumberOfJoints*2);
     end
 
     % calculate the state space
     dxdt = A*x + B*u;
 
-    t_rounded = round(t, 2);
-    if mod(t_rounded, 0.25) <= 1e-6
-        % Update the progress bar
-        progress = t / tf;
-        updateProgressBar(dynamicsFig, progress);
-    end
+    progress = t / tf;
+    updateProgressBar(dynamicsFig, progress);
 
 end

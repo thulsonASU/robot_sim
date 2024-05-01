@@ -878,9 +878,6 @@ function runSimButton_Callback( ...
     elseif length(FrictionV_Val) ~= NumberOfJoints
         errordlg('The number of viscosity frictions does not match the number of joints in the system.', 'Error', 'modal');
         return;
-    elseif length(JointLengths) ~= NumberOfJoints
-        errordlg('The number of joint lengths does not match the number of joints in the system.', 'Error', 'modal');
-        return;
     elseif length(CenterOfMassLengths) ~= NumberOfJoints
         errordlg('The number of center of mass lengths does not match the number of joints in the system.', 'Error', 'modal');
         return;
@@ -889,6 +886,10 @@ function runSimButton_Callback( ...
         return;
     elseif length(x0) ~= NumberOfJoints*2
         errordlg('The number of initial conditions does not match the number of joints in the system. x0 is defined as [position, velocity] for each joint.', 'Error', 'modal');
+        return;
+    % check if inputs are all numbers
+    elseif ~isnumeric(Kr_Val) || ~isnumeric(MassLI_Val) || ~isnumeric(MassMI_Val) || ~isnumeric(IntertiaLI_Val) || ~isnumeric(IntertiaMI_Val) || ~isnumeric(FrictionS_Val) || ~isnumeric(FrictionV_Val) || ~isnumeric(JointLengths) || ~isnumeric(CenterOfMassLengths) || ~isnumeric(u)
+        errordlg('All inputs must be numbers.', 'Error', 'modal');
         return;
     end
 
@@ -1118,13 +1119,18 @@ function plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic
         TransSyms = [q, str2sym(JointSymbolic)];
         TransVals = [transpose(pos_current), JointLengths];
 
-        % Calculate position of each link
+        % Initialize transformation matrix
+        T = eye(4);
+
         for i = 1:length(q)
-            % Extract the position from the transformation matrix
-            positions = TransMats_Joint2Joint(1:3, 4, i);
+            % Update the transformation matrix
+            T = T * TransMats_Joint2Joint(:,:,i);
 
             % Substitute symbolic variables with their corresponding numeric values
-            positions = subs(positions, TransSyms, TransVals);
+            T_sub = subs(T, TransSyms, TransVals);
+
+            % Extract the position from the transformation matrix
+            positions = T_sub(1:3, 4);
 
             x(i, k) = positions(1);
             y(i, k) = positions(2);

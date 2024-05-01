@@ -112,7 +112,7 @@ function runSimButton_Callback( ...
     Tc = str2num(tc_Field.Value);
     
     % user input checks to make sure the dimensions are correct for the number of joints in the system
-    NumberOfJoints = 2
+    NumberOfJoints = 2;
     if length(a) ~= NumberOfJoints
         errordlg('The number of gear ratios does not match the number of joints in the system.', 'Error', 'modal');
         return;
@@ -256,7 +256,7 @@ global a k_r1 k_r2 pi_m pi_l
 
 % final position
   p_f = [1.2+0.2*cos(pi/4);0.2];
-
+% cd("Impedance_Control\")
 % initial joint configuration
   q_i = inv_k2u(a,p_i);
 
@@ -269,7 +269,7 @@ global a k_r1 k_r2 pi_m pi_l
 % sample time for plots
   Ts = Tc;
 
-sim('Model_Name',Simulation_Time)
-    plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic, JointLengths);
+sim('s9_3.mdl')
+    % plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic, JointLengths);
     disp('Simulation complete');
 end

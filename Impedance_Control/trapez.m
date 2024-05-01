@@ -11,6 +11,8 @@ function [T,q,dq,ddq,err] = trapez(q_i,q_f,dq_c,t_f,Ts);
 %
 %       If err = 1 then dq_c is not compatible with other trajectory parameters
 
+% L. Villani, G. Oriolo, B. Siciliano
+% February 2009
 
 % time base vector
   T = (0:Ts:t_f)';

@@ -45,7 +45,7 @@ function ImpedanceButton_Callback()
     tc_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 100, 100, 20], 'Value', '0.001');
 
     % button to update the equations with the new values
-    runSimButton = uibutton(ImpedanceFig, 'Position', [120, 10, 100, 22], 'Text', 'Execute Values', 'ButtonPushedFcn', @(btn,event) runSimButton_Callback(...
+    runSimButton = uibutton(ImpedanceFig, 'Position', [120, 10, 100, 22], 'Text', 'Execute Values', 'ButtonPushedFcn', @(btn,event) runImpedanceSimButton_Callback(...
         a_Field, ...
         ml_Field, ...
         l_Field, ...
@@ -78,7 +78,7 @@ function ImpedanceButton_Callback()
 
 end
 
-function runSimButton_Callback( ...
+function runImpedanceSimButton_Callback( ...
     a_Field, ...
         ml_Field, ...
         l_Field, ...
@@ -256,7 +256,7 @@ global a k_r1 k_r2 pi_m pi_l
 
 % final position
   p_f = [1.2+0.2*cos(pi/4);0.2];
-cd("Impedance_Control\")
+
 % initial joint configuration
   q_i = inv_k2u(a,p_i);
 
@@ -269,7 +269,7 @@ cd("Impedance_Control\")
 % sample time for plots
   Ts = Tc;
 
-sim('s9_3.mdl')
+sim('Impedance_Control\s9_3.mdl')
     % plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic, JointLengths);
     disp('Simulation complete');
 end

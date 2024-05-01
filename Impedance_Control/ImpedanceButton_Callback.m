@@ -304,12 +304,16 @@ disp('Simulation complete');
 e = ans.e;
 f_e = ans.f_e;
 time = ans.time;
+pos_desired = ans.pos_desired;
+vel_desired = ans.vel_desired;
+pos_actual = ans.pos_actual;
+vel_actual = ans.vel_actual;
 
 hold off
 clf
 
 % position error in the base frame
-  subplot(2,2,1)
+  subplot(2,4,1)
   plot(time, e);
   axis([0 t_d -6e-2 6e-2]);
   %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
@@ -319,7 +323,7 @@ clf
   legend({'x', 'y'});
 
 % contact force in the base frame
-  subplot(2,2,2)
+  subplot(2,4,2)
   plot(time, f_e);
   axis([0 t_d -550 550]);
   %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
@@ -331,7 +335,7 @@ clf
 
 % position error in the rotated base frame
   ec = e*R_c;
-  subplot(2,2,3)
+  subplot(2,4,3)
   plot(time, ec);
   axis([0 t_d -6e-2 6e-2]);
   set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
@@ -342,7 +346,7 @@ clf
 
 % contact force in the rotated base frame
   f_ec = f_e*R_c;
-  subplot(2,2,4)
+  subplot(2,4,4)
   plot(time, f_ec);
   axis([0 t_d -550 550]);
   %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
@@ -351,5 +355,41 @@ clf
   title('contact force in the rotated base frame');
   legend({'x_c', 'y_c'});
 
+
+% desired position
+  subplot(2,4,5)
+  plot(time, pos_desired);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m]');
+  title('Desired Position');
+  legend({'x_c', 'y_c'});
+
+% desired velocity
+  subplot(2,4,6)
+  plot(time, vel_desired);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m/s]');
+  title('Desired Velocity');
+  legend({'x_c', 'y_c'});
+
+% Actual position
+  subplot(2,4,7)
+  plot(time, pos_actual);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m]');
+  title('Actual Position');
+  legend({'x_c', 'y_c'});
+
+% Actual velocity
+  subplot(2,4,8)
+  plot(time, vel_actual);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m/s]');
+  title('Actual Velocity');
+  legend({'x_c', 'y_c'});
 end
 

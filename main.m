@@ -458,6 +458,9 @@ function indirectImpedanceButton_Callback(dynamicsFig)
     % PUT CODE HERE FOR SIMULINK MODEL
 
     impedanceGUI = uifigure('Name', 'Impedance Control Simulink Model', 'NumberTitle', 'off');
+    % Create a table for DH parameters
+    impTable = uitable(impedanceGUI, 'Position', [20, 20, 400, 220], 'ColumnName', {'a (m)', 'alpha (rad)', 'd (m)', 'theta (rad)'}, 'ColumnEditable', [true true true true]);
+
     % Open Simulink model
     % open_system('Impedance_Control.slx');
     

@@ -5,9 +5,6 @@ function  B = iner_l(c_2);
 %
 %       c_2 = cos(q(2))
 
-% L. Villani, G. Oriolo, B. Siciliano
-% February 2009
-
 global pi_l a k_r2
 
 B(1,1) = a(1)*pi_l(1) + pi_l(2) + (a(2) + 2*a(1)*c_2)*pi_l(3) + pi_l(4);

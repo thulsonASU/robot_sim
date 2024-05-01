@@ -10,9 +10,6 @@ function y = dJ_a(w)
 %
 %       w(3:6)=[a(1)*c_1;a(2)*c_12;a(1)*s_1;a(2)*s_12]
 
-% L. Villani, G. Oriolo, B. Siciliano
-% February 2009
-
 dJ(:,2) = [-w(4); -w(6)]*(w(1)+w(2));
 dJ(:,1) = [-w(3); -w(5)]*w(1) + dJ(:,2);
 

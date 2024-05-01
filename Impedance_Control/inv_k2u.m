@@ -5,6 +5,9 @@ function q = inv_k2u(a,x)
 %        a is vector of link lengths
 %        x is vector of tip coordinates
 
+% L. Villani, G. Oriolo, B. Siciliano
+% February 2009
+
 r = x'*x;
 c2 = 0.5*(r - a(1)^2 - a(2)^2)/(a(1)*a(2));
 s2 = -sqrt(1 - c2^2);

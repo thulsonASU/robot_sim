@@ -1,3 +1,8 @@
+%P9_3   Plots of Problem 9.3.
+
+% L. Villani, G. Oriolo, B. Siciliano
+% February 2009
+
 hold off
 clf
 

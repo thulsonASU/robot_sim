@@ -1,6 +1,5 @@
-function d_Ja = AnalyticalJacobian_dot(q,qd,param)    
-    l1 = param.l1;
-    l3 = param.l3;
+function d_Ja = AnalyticalJacobian_dot(q,qd,l1,l3)    
+ 
 
     t1 = q(1);
     d3 = q(3);

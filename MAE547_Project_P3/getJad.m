@@ -1,4 +1,4 @@
-function [Jad] = getJad(q, x_tilde, xd, xe, param) 
+function [Jad] = getJad(q, x_tilde, xd, xe,l1,l3) 
     % Rotation matrix obtained from xd (fixed) in regulation problem
     Rd = eul2rotm(-x_tilde(4:6)','ZYZ');
     angles = -x_tilde(4:6);
@@ -20,5 +20,5 @@ function [Jad] = getJad(q, x_tilde, xd, xe, param)
             0, 0, 0, 0, cos(ph), sin(ph) * sin(th);
             0, 0, 0, 1, 0, cos(th)];
         
-    Jad = pinv(Ta)*[Rd', zeros(3,3); zeros(3,3), Rd']*Jacobian(q, param);
+    Jad = pinv(Ta)*[Rd', zeros(3,3); zeros(3,3), Rd']*Jacobian(q,l1,l3);
 end

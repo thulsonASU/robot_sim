@@ -1,4 +1,7 @@
 function ImpedanceButton_Callback()
+    clc;
+    clear all;
+
     % Create a new figure window
     ImpedanceFig = uifigure('Name', 'Impedance Simulation', 'NumberTitle', 'off');
 
@@ -7,42 +10,45 @@ function ImpedanceButton_Callback()
 
     % Add UI controls to the new figure window as needed
     % Add labels for instructions
-    uilabel(ImpedanceFig, 'Text', 'Each comma seperated value corresponds to each joint in series. ', 'Position', [20, 395, 400, 22]);
-    uilabel(ImpedanceFig, 'Text', 'Link parameters', 'Position', [40, 360, 500, 22]);
+    uilabel(ImpedanceFig, 'Text', 'Each comma seperated value corresponds to each joint in series.', 'Position', [20, 400, 400, 22]);
+    uilabel(ImpedanceFig, 'Text', 'Robot: 2-Link Planar Arm', 'Position', [20, 380, 500, 22]);
     
-    % Add labels for each field
+    uilabel(ImpedanceFig, 'Text', 'Link parameters', 'Position', [40, 360, 500, 22]);
+    %Link Parameters
     uilabel(ImpedanceFig, 'Text', 'Link Lengths:', 'Position', [10, 340, 300, 20]);
     uilabel(ImpedanceFig, 'Text', 'Link Masses:', 'Position', [10, 320, 300, 20]);
     uilabel(ImpedanceFig, 'Text', 'Distance of CM from Joint Axis:', 'Position', [10, 300, 300, 20]);
     uilabel(ImpedanceFig, 'Text', 'Inertia Moments:', 'Position', [10, 280, 300, 20]);
-
+    
+    uilabel(ImpedanceFig, 'Text', 'Motor parameters', 'Position', [40, 260, 500, 22]);
     %Motor parameters
-    uilabel(ImpedanceFig, 'Text', 'Motor Masses:', 'Position', [10, 260, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Motor Inertia Moments:', 'Position', [10, 240, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Transmission Ratios:', 'Position', [10, 220, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Gravity:', 'Position', [10, 200, 300, 20]);
-
-    %Impedance control gains
-    uilabel(ImpedanceFig, 'Text', 'KD:', 'Position', [10, 180, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'KP:', 'Position', [10, 160, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'MD:', 'Position', [10, 140, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Duration of Simulation:', 'Position', [10, 120, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Sample Time of Controller:', 'Position', [10, 100, 300, 20]);
+    uilabel(ImpedanceFig, 'Text', 'Motor Masses:', 'Position', [10, 240, 300, 20]);
+    uilabel(ImpedanceFig, 'Text', 'Motor Inertia Moments:', 'Position', [10, 220, 300, 20]);
+    uilabel(ImpedanceFig, 'Text', 'Transmission Ratios:', 'Position', [10, 200, 300, 20]);
+    uilabel(ImpedanceFig, 'Text', 'Gravity:', 'Position', [10, 180, 300, 20]);
+    
+    uilabel(ImpedanceFig, 'Text', 'Gains Control', 'Position', [340, 360, 500, 22]);
+    % %Impedance control gains
+    uilabel(ImpedanceFig, 'Text', 'KD:', 'Position', [310, 340, 300, 20]);
+    uilabel(ImpedanceFig, 'Text', 'KP:', 'Position', [310, 320, 300, 20]);
+    uilabel(ImpedanceFig, 'Text', 'MD:', 'Position', [310, 300, 300, 20]);
+    uilabel(ImpedanceFig, 'Text', 'Duration:', 'Position', [310, 280, 300, 20]);
+    uilabel(ImpedanceFig, 'Text', 'Sample Time:', 'Position', [310, 260, 300, 20]);
 
     % Make a ui field to fill in for Kr MassLI MassMI IntertiaLI IntertiaMI center of mass lengths
     a_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 340, 100, 20], 'Value', '1,1');
     ml_Field= uieditfield(ImpedanceFig, 'text', 'Position', [200, 320, 100, 20], 'Value', '50,50');
     l_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 300, 100, 20], 'Value', '0.5,0.5');
     Il_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 280, 100, 20], 'Value', '10,10');
-    mm_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 260, 100, 20], 'Value', '5,5');
-    Im_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 240, 100, 20], 'Value', '0.01,0.01');
-    kr_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 220, 100, 20], 'Value', '100,100');
-    g_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 200, 100, 20], 'Value', '9.81');
-    Kd_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 180, 100, 20], 'Value', '1600');
-    Kp_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 160, 100, 20], 'Value', '5000');
-    Md_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 140, 100, 20], 'Value', '100');
-    t_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 120, 100, 20], 'Value', '2.5');
-    tc_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 100, 100, 20], 'Value', '0.001');
+    mm_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 240, 100, 20], 'Value', '5,5');
+    Im_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 220, 100, 20], 'Value', '0.01,0.01');
+    kr_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 200, 100, 20], 'Value', '100,100');
+    g_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 180, 100, 20], 'Value', '9.81');
+    Kd_Field = uieditfield(ImpedanceFig, 'text', 'Position', [450, 340, 100, 20], 'Value', '1600');
+    Kp_Field = uieditfield(ImpedanceFig, 'text', 'Position', [450, 320, 100, 20], 'Value', '5000');
+    Md_Field = uieditfield(ImpedanceFig, 'text', 'Position', [450, 300, 100, 20], 'Value', '100');
+    t_Field = uieditfield(ImpedanceFig, 'text', 'Position', [450, 280, 100, 20], 'Value', '2.5');
+    tc_Field = uieditfield(ImpedanceFig, 'text', 'Position', [450, 260, 100, 20], 'Value', '0.001');
 
     % button to update the equations with the new values
     runSimButton = uibutton(ImpedanceFig, 'Position', [120, 10, 100, 22], 'Text', 'Execute Values', 'ButtonPushedFcn', @(btn,event) runSimButton_Callback(...
@@ -292,7 +298,11 @@ ddo_d(1:m,:) = dds*(p_f - p_i)';
 Ts = Tc;
 
 filename = "impedanceControl_ws.mat";
-save(filename)
+if exist(filename, 'file') == 2
+    delete(filename);
+end
+
+save(filename);
 
 % sim('s9_3.mdl')
 sim('Impedance_Control.slx')
@@ -300,6 +310,7 @@ sim('Impedance_Control.slx')
 
 
 disp('Simulation complete');
+disp('Now Plotting...');
 
 e = ans.e;
 f_e = ans.f_e;
@@ -309,6 +320,7 @@ vel_desired = ans.vel_desired;
 pos_actual = ans.pos_actual;
 vel_actual = ans.vel_actual;
 
+figure
 hold off
 clf
 

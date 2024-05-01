@@ -289,7 +289,7 @@ ddo_d(1:m,:) = dds*(p_f - p_i)';
 
 
 % sample time for plots
-  Ts = Tc;
+Ts = Tc;
 
 filename = "test.mat";
 save(filename)
@@ -349,11 +349,7 @@ clf
   xlabel('[s]');
   ylabel('[N]');
   title('contact force in the rotated base frame');
-  pt(7) = text(1.5, 60,'x_c');
-  pt(8) = text(1.5, -170,'y_c');
   legend({'x_c', 'y_c'});
 
-
-  
 end
 

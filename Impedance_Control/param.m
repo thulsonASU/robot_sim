@@ -1,8 +1,5 @@
 %PARAM  Augmented link parameters.
-
-% L. Villani, G. Oriolo, B. Siciliano
-% February 2009
-
+s
 % link parameters
   % lengths
     a  = [1;1];

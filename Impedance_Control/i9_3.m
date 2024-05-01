@@ -15,7 +15,7 @@ global a k_r1 k_r2 pi_m pi_l
 
   % inertia moments relative to the centers of mass
     I_l1 = 10;
-    I_l2 = I_l1;
+    I_l2 = 10;
 
 % motor parameters
   % masses

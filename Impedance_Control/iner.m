@@ -5,8 +5,6 @@ function  B = iner(c_2)
 %
 %       c_2 = cos(q(2))
 
-% L. Villani, G. Oriolo, B. Siciliano
-% February 2009
 
 global pi_m a k_r2
 

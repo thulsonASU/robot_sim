@@ -65,29 +65,21 @@ hold on;
 grid on;
 plot(out.x.Time, out.tau.data(:,1),'LineWidth', 1.2);
 xlabel('time [s]');
-ylabel('tau [Nm]');
-legend('tau1');
+ylabel('Contact Force 1 [Nm]');
+legend('Contact Force 1');
 
 subplot(3,3,8);
 hold on;
 grid on;
 plot(out.x.Time, out.tau.data(:,2),'LineWidth', 1.2);
 xlabel('time [s]');
-ylabel('tau [Nm]');
-legend('tau2');
+ylabel('Contact Force 2 [Nm]');
+legend('Contact Force 2');
 
 subplot(3,3,9);
 hold on;
 grid on;
 plot(out.x.Time, out.tau.data(:,3),'LineWidth', 1.2);
 xlabel('time [s]');
-ylabel('tau [Nm]');
-legend('tau3');
-
-
-figure;
-plot(out.he.Time, out.he.data(:,1),'LineWidth', 1.2);
-hold on; plot(out.he_limit.Time, out.he_limit.data(:,1),'LineWidth', 1.2);
-xlabel('time [s]');
-ylabel('he');
-legend('he', 'he\_limit');
+ylabel('Contact Force3 [Nm]');
+legend('Contact Force 3');

@@ -264,12 +264,132 @@ global a k_r1 k_r2 pi_m pi_l
   % t_d = 2.5;
 
 % trajectory in base frame
-  tra_5;
+% time base vector
+T = (0:Tc:t_d)';
+
+% segment length
+D_s = norm(p_f - p_i);
+
+% trapezoidal velocity profile trajectory for path coordinate from 0 to 1
+ds_c = 0.5;                % maximum velocity
+t_f  = 1;                  % final time
+[T_1,s,ds,dds,err] = trapez(0,1,ds_c/D_s,t_f,Tc);
+
+n = size(T,1);
+m = size(T_1,1);
+o_d = zeros(n,2);
+do_d = o_d;
+ddo_d = o_d;
+
+% tip trajectory
+o_d(1:m,:) = ones(m,1)*p_i' + s*(p_f - p_i)';
+o_d(m+1:n,:) = ones(n-m,1)*p_f';
+do_d(1:m,:) = ds*(p_f - p_i)';
+ddo_d(1:m,:) = dds*(p_f - p_i)';
+
 
 % sample time for plots
-  Ts = Tc;
+Ts = Tc;
 
-sim('s9_3.mdl')
+filename = "impedanceControl_ws.mat";
+save(filename)
+
+% sim('s9_3.mdl')
+sim('Impedance_Control.slx')
     % plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic, JointLengths);
-    disp('Simulation complete');
+
+
+disp('Simulation complete');
+
+e = ans.e;
+f_e = ans.f_e;
+time = ans.time;
+pos_desired = ans.pos_desired;
+vel_desired = ans.vel_desired;
+pos_actual = ans.pos_actual;
+vel_actual = ans.vel_actual;
+
+hold off
+clf
+
+% position error in the base frame
+  subplot(2,4,1)
+  plot(time, e);
+  axis([0 t_d -6e-2 6e-2]);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m]');
+  title('Position error in the base frame');
+  legend({'x', 'y'});
+
+% contact force in the base frame
+  subplot(2,4,2)
+  plot(time, f_e);
+  axis([0 t_d -550 550]);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[N]');
+  title('contact force in the base frame');
+  legend({'x', 'y'});
+
+
+% position error in the rotated base frame
+  ec = e*R_c;
+  subplot(2,4,3)
+  plot(time, ec);
+  axis([0 t_d -6e-2 6e-2]);
+  set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m]');
+  title('position error in the rotated base frame');
+  legend({'x_c', 'y_c'});
+
+% contact force in the rotated base frame
+  f_ec = f_e*R_c;
+  subplot(2,4,4)
+  plot(time, f_ec);
+  axis([0 t_d -550 550]);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[N]');
+  title('contact force in the rotated base frame');
+  legend({'x_c', 'y_c'});
+
+
+% desired position
+  subplot(2,4,5)
+  plot(time, pos_desired);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m]');
+  title('Desired Position');
+  legend({'x_c', 'y_c'});
+
+% desired velocity
+  subplot(2,4,6)
+  plot(time, vel_desired);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m/s]');
+  title('Desired Velocity');
+  legend({'x_c', 'y_c'});
+
+% Actual position
+  subplot(2,4,7)
+  plot(time, pos_actual);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m]');
+  title('Actual Position');
+  legend({'x_c', 'y_c'});
+
+% Actual velocity
+  subplot(2,4,8)
+  plot(time, vel_actual);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
+  xlabel('[s]');
+  ylabel('[m/s]');
+  title('Actual Velocity');
+  legend({'x_c', 'y_c'});
 end
+

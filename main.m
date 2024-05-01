@@ -36,24 +36,24 @@ closeButton = uibutton(fig, 'Position', [430, 10, 100, 22], 'Text', 'Close', 'Bu
 closeButton.BackgroundColor = [0.7 0.2 0.2]; % Red color
 
 % % BUTTON FOR DYNAMICS SIMULATION
-% dynamicsButton = uibutton(fig, 'Position', [430, 80, 100, 22], 'Text', 'Dynamics Sim', 'ButtonPushedFcn', ...
-%     @(btn,event) dynamicsButton_Callback( ...
-%     evalin('base', 'NumberOfJoints'), ...
-%     evalin('base', 'Tao'), ...
-%     evalin('base', 'Kr_Sym'), ...
-%     evalin('base', 'MassLI_Sym'), ...
-%     evalin('base', 'MassMI_Sym'), ...
-%     evalin('base', 'IntertiaLI_Sym'), ...
-%     evalin('base', 'IntertiaMI_Sym'), ...
-%     evalin('base', 'FrictionS_Sym'), ...
-%     evalin('base', 'FrictionV_Sym'), ...
-%     evalin('base', 'JointSymbolic'), ...
-%     evalin('base', 'CenterOfMassSymbolic'), ...
-%     evalin('base', 'JointLengths'), ...
-%     evalin('base', 'CenterOfMassLengths'),...
-%     evalin('base', 'q'), ...
-%     evalin('base', 'qd'), ...
-%     evalin('base', 'qdd')));
+ dynamicsButton = uibutton(fig, 'Position', [430, 80, 100, 22], 'Text', 'Dynamics Sim', 'ButtonPushedFcn', ...
+     @(btn,event) dynamicsButton_Callback( ...
+     evalin('base', 'NumberOfJoints'), ...
+     evalin('base', 'Tao'), ...
+     evalin('base', 'Kr_Sym'), ...
+     evalin('base', 'MassLI_Sym'), ...
+     evalin('base', 'MassMI_Sym'), ...
+     evalin('base', 'IntertiaLI_Sym'), ...
+     evalin('base', 'IntertiaMI_Sym'), ...
+     evalin('base', 'FrictionS_Sym'), ...
+     evalin('base', 'FrictionV_Sym'), ...
+     evalin('base', 'JointSymbolic'), ...
+     evalin('base', 'CenterOfMassSymbolic'), ...
+     evalin('base', 'JointLengths'), ...
+     evalin('base', 'CenterOfMassLengths'),...
+     evalin('base', 'q'), ...
+     evalin('base', 'qd'), ...
+     evalin('base', 'qdd')));
 
 function DHfigButton_Callback()
     % Create a figure window
@@ -156,7 +156,6 @@ function runButton_Callback(dhTable,dropdown)
             JointLengths(i) = DHTable{i,1};
             si = string(i);
             JointSymbolic(i) = "a"+si;
-            
             DHTable{i,1} = str2sym(JointSymbolic(i));
         end
     end
@@ -331,8 +330,7 @@ function runButton_Callback(dhTable,dropdown)
     evalin('base', 'CenterOfMassLengths'),...
     evalin('base', 'q'), ...
     evalin('base', 'qd'), ...
-    evalin('base', 'qdd') ...
-    );
+    evalin('base', 'qdd'));
 
 end
 
@@ -379,11 +377,10 @@ function dynamicsButton_Callback(TransMats_Joint2Joint, NumberOfJoints, Tao, Kr_
     IntertiaMIEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 260, 100, 20], 'Value', '1,1,1');
     FrictionSEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 240, 100, 20], 'Value', '0.05,0.05,0.05');
     FrictionVEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 220, 100, 20], 'Value', '0.05,0.05,0.05');
-
     uEditField = uieditfield(dynamicsFig, 'text', 'Position', [455, 340, 80, 20], 'Value', '0,0,0');
     x0EditField = uieditfield(dynamicsFig, 'text', 'Position', [455, 320, 80, 20], 'Value', '0,0,0,0,0,0');
     tf = uieditfield(dynamicsFig, 'text', 'Position', [455, 300, 50, 20], 'Value', '4');
-
+    
     maxStepField = uieditfield(dynamicsFig, 'text', 'Position', [120, 170, 100, 20], 'Value', '0.1');
     relTolField = uieditfield(dynamicsFig, 'text', 'Position', [120, 150, 100, 20], 'Value', '1e-4');
     absTolField = uieditfield(dynamicsFig, 'text', 'Position', [120, 130, 100, 20], 'Value', '1e-5');
@@ -441,7 +438,7 @@ function dynamicsButton_Callback(TransMats_Joint2Joint, NumberOfJoints, Tao, Kr_
         dynamicsFig ... % Put Params here or do something else to get them passed to the model
         ));
     % Indirect Force Control via Impedance
-    indirectImpedanceButton = uibutton(dynamicsFig, 'Position', [10, 50, 200, 22], 'Text', 'Impedance Force Control', 'ButtonPushedFcn', @(btn,event) ImpedanceButton_Callback( ...
+    indirectImpedanceButton = uibutton(dynamicsFig, 'Position', [10, 50, 200, 22], 'Text', 'Impedance Force Control', 'ButtonPushedFcn', @(btn,event) indirectImpedanceButton_Callback( ...
         dynamicsFig ... % Put Params here or do something else to get them passed to the model
         ));
 end
@@ -449,314 +446,215 @@ end
 % Add Button Callback for Indirect Force Control via Compliance in Simulink
 function indirectForceButton_Callback(dynamicsFig)
     disp('WIP') % Zane and Gang
-    % PUT CODE HERE FOR SIMULINK MODEL
-end
-
-function ImpedanceButton_Callback(dynamicsFig)
-    % Tatwik and Danis
-
-    % Create a new figure window
-    ImpedanceFig = uifigure('Name', 'Impedance Simulation', 'NumberTitle', 'off');
-
-    closeButton = uibutton(ImpedanceFig, 'Position', [10, 10, 100, 22], 'Text', 'Close', 'ButtonPushedFcn', @(btn,event) close(ImpedanceFig));
+    dynamicsFig = uifigure('Name', 'Compliance Control with Gravity Compensation', 'NumberTitle', 'off');
+    uilabel(dynamicsFig, 'Text', 'Provide the Values for the Following', 'Position', [40, 360, 500, 22]);
+    closeButton = uibutton(dynamicsFig, 'Position', [10, 10, 100, 22], 'Text', 'Close', 'ButtonPushedFcn', @(btn,event) close(dynamicsFig));
     closeButton.BackgroundColor = [0.7 0.2 0.2]; % Red color
+    plotResultsButton = uibutton(dynamicsFig, 'Position', [230, 10, 120, 22], 'Text', 'Plot Results', 'ButtonPushedFcn', @(btn,event) plotResultsButton_Callback(evalin('base', 'out')));
+    plotResultsButton.BackgroundColor = [0.2 0.2 0.7]; % Blue color
 
     % Add UI controls to the new figure window as needed
+    uilabel(dynamicsFig, 'Text', 'Choose a Kp Value:', 'Position', [10, 340, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Choose a Kd Value:', 'Position', [10, 320, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define xd (Desired Position):', 'Position', [10, 300, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define T03:', 'Position', [10, 280, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define wall enviroment:', 'Position', [10, 260, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define the axis enviroment:', 'Position', [10, 240, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define t1', 'Position', [10, 220, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define t2', 'Position', [10, 200, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define t3:', 'Position', [10, 180, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define d1:', 'Position',[10, 160, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define d2:', 'Position', [10, 140, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Define d3:', 'Position', [10, 120, 300, 20]);
+    uilabel(dynamicsFig, 'Text', 'Link 1 Value:', 'Position', [280, 340, 100, 20]);
+    uilabel(dynamicsFig, 'Text', 'Link 2 Value:', 'Position', [280, 320, 100, 20]);
+    uilabel(dynamicsFig, 'Text', 'Link 3 Value:', 'Position', [280, 300, 100, 20]);
+    uilabel(dynamicsFig, 'Text', 'Mass 1 (link) Value:', 'Position', [280, 280, 100, 20]);
+    uilabel(dynamicsFig, 'Text', 'Mass 2 (link) Value:', 'Position', [280, 260, 100, 20]);
+    uilabel(dynamicsFig, 'Text', 'Mass 3 (link) Value:', 'Position', [280, 240, 100, 20]);
+
+
+    KpEditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 340, 100, 20], 'Value', 100);
+    KdEditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 320, 100, 20], 'Value', 20);
+    xdEditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 300, 100, 20], 'Value', '0.65;0.065;0.36;-3;-1.6;-3.14');
+    T03EditField = uieditfield(dynamicsFig, 'text', 'Position', [170, 280, 100, 20], 'Value', '0, -sin(t1), cos(t1), cos(t1)*(d3+l3) + l1*cos(t1); 0, cos(t1), sin(t1), sint(t1)*(d3+l3)+l1*sin(t1); -1, 0, 0, d2 + l2; 0, 0, 0, 1');
+    wallEditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 260, 100, 20], 'Value', 0.6);
+    axisEditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 240, 100, 20], 'Value', 1);
+    t1EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 220, 100, 20], 'Value', 0.1);
+    t2EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 200, 100, 20], 'Value', 0);
+    t3EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 180, 100, 20], 'Value', 0);
+    d1EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 160, 100, 20], 'Value', 0);
+    d2EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 140, 100, 20], 'Value', -0.1);
+    d3EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [170, 120, 100, 20], 'Value', 0.1);
+
+    l1EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [455, 340, 80, 20], 'Value', 0.4);
+    l2EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [455, 320, 80, 20], 'Value', 0.46);
+    l3EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [455, 300, 80, 20], 'Value', 0.15);
+    m1EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [455, 280, 80, 20], 'Value', 1.4);
+    m2EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [455, 260, 80, 20], 'Value', 1.1);
+    m3EditField = uieditfield(dynamicsFig, 'numeric', 'Position', [455, 240, 80, 20], 'Value', 0.04);
+
     % Add labels for instructions
-    uilabel(ImpedanceFig, 'Text', 'Each comma seperated value corresponds to each joint in series. ', 'Position', [20, 395, 400, 22]);
-    uilabel(ImpedanceFig, 'Text', 'Link parameters', 'Position', [40, 360, 500, 22]);
-    
-    % Add labels for each field
-    uilabel(ImpedanceFig, 'Text', 'Link Lengths:', 'Position', [10, 340, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Link Masses:', 'Position', [10, 320, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Distance of CM from Joint Axis:', 'Position', [10, 300, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Inertia Moments:', 'Position', [10, 280, 300, 20]);
-
-    %Motor parameters
-    uilabel(ImpedanceFig, 'Text', 'Motor Masses:', 'Position', [10, 260, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Motor Inertia Moments:', 'Position', [10, 240, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Transmission Ratios:', 'Position', [10, 220, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Gravity:', 'Position', [10, 200, 300, 20]);
-
-    %Impedance control gains
-    uilabel(ImpedanceFig, 'Text', 'KD:', 'Position', [10, 180, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'KP:', 'Position', [10, 160, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'MD:', 'Position', [10, 140, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Duration of Simulation:', 'Position', [10, 120, 300, 20]);
-    uilabel(ImpedanceFig, 'Text', 'Sample Time of Controller:', 'Position', [10, 100, 300, 20]);
-
-    % Make a ui field to fill in for Kr MassLI MassMI IntertiaLI IntertiaMI center of mass lengths
-    a_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 340, 100, 20], 'Value', '1,1');
-    ml_Field= uieditfield(ImpedanceFig, 'text', 'Position', [200, 320, 100, 20], 'Value', '50,50');
-    l_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 300, 100, 20], 'Value', '0.5,0.5');
-    Il_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 280, 100, 20], 'Value', '10,10');
-    mm_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 260, 100, 20], 'Value', '5,5');
-    Im_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 240, 100, 20], 'Value', '0.01,0.01');
-    kr_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 220, 100, 20], 'Value', '100,100');
-    g_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 200, 100, 20], 'Value', '9.81');
-    Kd_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 180, 100, 20], 'Value', '1600');
-    Kp_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 160, 100, 20], 'Value', '5000');
-    Md_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 140, 100, 20], 'Value', '100');
-    t_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 120, 100, 20], 'Value', '2.5');
-    tc_Field = uieditfield(ImpedanceFig, 'text', 'Position', [200, 100, 100, 20], 'Value', '0.001');
-
-    % button to update the equations with the new values
-    runSimButton = uibutton(ImpedanceFig, 'Position', [120, 10, 100, 22], 'Text', 'Execute Values', 'ButtonPushedFcn', @(btn,event) runImpedanceSimButton_Callback(...
-        a_Field, ...
-        ml_Field, ...
-        l_Field, ...
-        Il_Field, ...
-        mm_Field, ...
-        Im_Field, ...
-        kr_Field, ...
-        g_Field, ...
-        Kd_Field, ...
-        Kp_Field, ...
-        Md_Field, ...
-        t_Field, ...
-        tc_Field));
+ 
+    runSimButton = uibutton(dynamicsFig, 'Position', [120, 10, 100, 22], 'Text', 'Run Simulation', 'ButtonPushedFcn', @(btn,event) indirectForceSimButton_Callback(...
+        KpEditField, ...
+        KdEditField, ...
+        xdEditField, ...
+        T03EditField, ...
+        wallEditField, ...
+        axisEditField, ...
+        t1EditField, ...
+        t2EditField, ...
+        t3EditField, ...
+        d1EditField, ...
+        d2EditField, ...
+        d3EditField, ...
+        l1EditField, ...
+        l2EditField,...
+        l3EditField, ...
+        m1EditField, ...
+        m2EditField, ...
+        m3EditField ));
     runSimButton.BackgroundColor = [0.2 0.7 0.2]; % Green color
+end
+function indirectForceSimButton_Callback(KpEditField, KdEditField, xdEditField, HEditField, wallEditField, axisEditField, t1EditField, t2EditField, t3EditField, d1EditField, d2EditField, d3EditField,l1EditField, l2EditField, l3EditField, m1EditField, m2EditField, m3EditField)
 
-    % show plots button
-    % plotButton = uibutton(dynamicsFig, 'Position', [230, 10, 100, 22], 'Text', 'Plot Simulation', 'ButtonPushedFcn', @(btn,event) plotButton_Callback(dynamicsFig));
-
-    % % Label for Simulink Buttons
-    % uilabel(dynamicsFig, 'Text', 'Simulink Control Models', 'Position', [40, 100, 400, 22]);
-    % % Buttons for Simulink Models by Tatwik, Danis, and Zane
-    % % Indirect Force Control via Compliance
-    % indirectForceButton = uibutton(dynamicsFig, 'Position', [10, 80, 200, 22], 'Text', 'Compliance Force Control', 'ButtonPushedFcn', @(btn,event) indirectForceButton_Callback( ...
-    %     dynamicsFig ... % Put Params here or do something else to get them passed to the model
-    %     ));
-    % % Indirect Force Control via Impedance
-    % indirectImpedanceButton = uibutton(dynamicsFig, 'Position', [10, 50, 200, 22], 'Text', 'Impedance Force Control', 'ButtonPushedFcn', @(btn,event) indirectImpedanceButton_Callback( ...
-    %     dynamicsFig ... % Put Params here or do something else to get them passed to the model
-    %     ));
+    %param.Kp = Kp;
+% Set the parameters in the Simulink model
+    assignin('base', 'Kp', KpEditField.Value);
+    assignin('base', 'Kd', KdEditField.Value);
+    assignin('base', 'xd', str2num(xdEditField.Value));
+    assignin('base', 'T03', HEditField.Value);
+    assignin('base', 'wall', wallEditField.Value);
+    assignin('base', 'axis', axisEditField.Value);
+    assignin('base', 't1', t1EditField.Value);
+    assignin('base', 't2', t2EditField.Value);
+    assignin('base', 't3', t3EditField.Value);
+    assignin('base', 'd1', d1EditField.Value);
+    assignin('base', 'd2', d2EditField.Value);
+    assignin('base', 'd3', d3EditField.Value);
+    assignin('base', 'l1', l1EditField.Value);
+    assignin('base', 'l2', l2EditField.Value);
+    assignin('base', 'l3', l3EditField.Value);
+    assignin('base', 'm1', m1EditField.Value);
+    assignin('base', 'm2', m2EditField.Value);
+    assignin('base', 'm3', m3EditField.Value);
+    sim("MAE547_Project_P3\MAE547ComplianceControl.slx")
 
 end
 
-function runImpedanceSimButton_Callback( ...
-    a_Field, ...
-        ml_Field, ...
-        l_Field, ...
-        Il_Field, ...
-        mm_Field, ...
-        Im_Field, ...
-        kr_Field, ...
-        g_Field, ...
-        Kd_Field, ...
-        Kp_Field, ...
-        Md_Field, ...
-        t_Field, ...
-        tc_Field)
+function plotResultsButton_Callback(out)
+    figure();
+    subplot(3,3,1);
+    hold on;
+    grid on;
+    plot(out.x.Time, out.x.data(:,1),'LineWidth', 1.2);
+% hold on; plot(out.xd.Time, out.xd.data(:,1),'LineWidth', 1.2);
+    yline(out.xd.data(1,1),'-','');
+    yline(0.6,'-','environment');
+    xlabel('time [s]');
+    ylabel('x');
+    legend('x', 'xd');
 
-    % Get the values from the user input fields
-    % convert the EditField values to numbers str2num
+    subplot(3,3,2);
+    hold on;
+    grid on;
+    plot(out.x.Time, out.x.data(:,2),'LineWidth', 1.2);
+    %hold on; plot(out.xd.Time, out.xd.data(:,2),'LineWidth', 1.2);
+    yline(out.xd.data(1,2),'-','');
+    xlabel('time [s]');
+    ylabel('x');
+    legend('y', 'yd');
 
-    % Impedance parameters code starts here
-    global a k_r1 k_r2 pi_m pi_l
+    subplot(3,3,3);
+    hold on;
+    grid on;
+    plot(out.x.Time, out.x.data(:,3),'LineWidth', 1.2);
+%hold on; plot(out.xd.Time, out.xd.data(:,3),'LineWidth', 1.2);
+    yline(out.xd.data(1,3),'-','');
+    xlabel('time [s]');
+    ylabel('x');
+    legend('z', 'zd');
 
-    % convert chars to array
-    a = str2num(a_Field.Value);
-    m_l = str2num(ml_Field.Value);
-    l = str2num(l_Field.Value);
-    I_l = str2num(Il_Field.Value);
-    m_m = str2num(mm_Field.Value);
-    I_m = str2num(Im_Field.Value);
-    k_r = str2num(kr_Field.Value);
-    g = str2num(g_Field.Value);
-    Kd = str2num(Kd_Field.Value);
-    Kp = str2num(Kp_Field.Value);
-    Md = str2num(Md_Field.Value);
-    t_d = str2num(t_Field.Value);
-    Tc = str2num(tc_Field.Value);
+    subplot(3,3,4);
+    hold on;
+    grid on;
+    plot(out.x.Time, out.x.data(:,4),'LineWidth', 1.2);
+%hold on; plot(out.xd.Time, out.xd.data(:,4),'LineWidth', 1.2);
+    yline(out.xd.data(1,4),'-','');
+    xlabel('time [s]');
+    ylabel('orientation');
+    legend('phi', 'phid');
+
+    subplot(3,3,5);
+    hold on;
+    grid on;
+    plot(out.x.Time, out.x.data(:,5),'LineWidth', 1.2);
+%hold on; plot(out.xd.Time, out.xd.data(:,5),'LineWidth', 1.2);
+    yline(out.xd.data(1,5),'-','');
+    xlabel('time [s]');
+    ylabel('orientation');
+    legend('theta', 'thetad');
+
+    subplot(3,3,6);
+    hold on;
+    grid on;
+    plot(out.x.Time, out.x.data(:,6),'LineWidth', 1.2);
+%hold on; plot(out.xd.Time, out.xd.data(:,6),'LineWidth', 1.2);
+    yline(out.xd.data(1,6),'-','');
+    xlabel('time [s]');
+    ylabel('orientation');
+    legend('psi', 'psid');
+
+    subplot(3,3,7);
+    hold on;
+    grid on;
+    plot(out.x.Time, out.tau.data(:,1),'LineWidth', 1.2);
+    xlabel('time [s]');
+    ylabel('Contact Force 1 [Nm]');
+    legend('Contact Force 1');
+
+    subplot(3,3,8);
+    hold on;
+    grid on;
+    plot(out.x.Time, out.tau.data(:,2),'LineWidth', 1.2);
+    xlabel('time [s]');
+    ylabel('Contact Force 2 [Nm]');
+    legend('Contact Force 2');
+
+    subplot(3,3,9);
+    hold on;
+    grid on;
+    plot(out.x.Time, out.tau.data(:,3),'LineWidth', 1.2);
+    xlabel('time [s]');
+    ylabel('Contact Force3 [Nm]');
+    legend('Contact Force 3');
+
+end
+
+
+% Add Button Callback for Indirect Force Control via Impedance in Simulink
+function indirectImpedanceButton_Callback(dynamicsFig)
+    disp('WIP') % Tatwik and Danis
+    % PUT CODE HERE FOR SIMULINK MODEL
+
+    impedanceGUI = uifigure('Name', 'Impedance Control Simulink Model', 'NumberTitle', 'off');
+    % Open Simulink model
+    % open_system('Impedance_Control.slx');
     
-    % user input checks to make sure the dimensions are correct for the number of joints in the system
-    NumberOfJoints = 2;
-    if length(a) ~= NumberOfJoints
-        errordlg('The number of gear ratios does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(m_l) ~= NumberOfJoints
-        errordlg('The number of link masses does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(l) ~= NumberOfJoints
-        errordlg('The number of motor masses does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(I_l) ~= NumberOfJoints
-        errordlg('The number of link inertias does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(m_m) ~= NumberOfJoints
-        errordlg('The number of motor inertias does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(I_m) ~= NumberOfJoints
-        errordlg('The number of static frictions does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(k_r) ~= NumberOfJoints
-        errordlg('The number of viscosity frictions does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(g) ~= 1
-        errordlg('The number of joint lengths does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(Kd) ~= 1
-        errordlg('The number of center of mass lengths does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(Kp) ~= 1
-        errordlg('The number of torques does not match the number of joints in the system.', 'Error', 'modal');
-        return;
-    elseif length(Md) ~= 1
-        errordlg('The number of initial conditions does not match the number of joints in the system. x0 is defined as [position, velocity] for each joint.', 'Error', 'modal');
-        return;
-    elseif length(t_d) ~= 1
-        errordlg('The number of initial conditions does not match the number of joints in the system. x0 is defined as [position, velocity] for each joint.', 'Error', 'modal');
-        return;
-    elseif length(Tc) ~= 1
-        errordlg('The number of initial conditions does not match the number of joints in the system. x0 is defined as [position, velocity] for each joint.', 'Error', 'modal');
-        return;
-    end
+    % F_v = K_r*diag([0.01 0.01])*K_r;
+    
+    % Run Simulink simulation
+    % sim('Impedance_Control.slx');
+%     M_d = 100*diag([]);
+%     iM_d = inv(M_d)
+% imp_Kd
+% imp_Kp
 
-    addpath('Impedance_Control'); % For Impedance Control Functions
-
-% load manipulator dynamic parameters without load mass
-  % link parameters
-  % lengths
-    % a  = [1;1];
-
-  % masses
-    % m_l1  = 50;
-    % m_l2  = 50;
-    m_l1 = m_l(1);
-    m_l2 = m_l(2);
-
-
-  % distances of centers of mass from joint axes
-    % l_1  =  0.5;
-    % l_2  =  0.5;
-    l_1 = l(1);
-    l_2 = l(2);
-
-  % inertia moments relative to the centers of mass
-    % I_l1 = 10;
-    % I_l2 = 10;
-    I_l1 = I_l(1);
-    I_l2 = I_l(2);
-
-% motor parameters
-  % masses
-    % m_m1 = 5;
-    % m_m2 = 5;
-    m_m1 = m_m(1);
-    m_m2 = m_m(2);
-
-  % inertia moments
-    % I_m1 = 0.01;
-    % I_m2 = 0.01;
-    I_m1 = I_m(1);
-    I_m2 = I_m(2);
-
-  % transmission ratios
-    % k_r1 = 100;
-    % k_r2 = 100;
-    k_r1 = k_r(1);
-    k_r2 = k_r(2);
-
-% augmented link parameters
-  % masses
-    m_1 = m_l1 + m_m2;
-    m_2 = m_l2;
-
-  % first moments of inertia
-    m1_lC1 = m_l1*(l_1 - a(1));
-    m2_lC2 = m_l2*(l_2 - a(2));
-
-  % inertia moments relative to origins of link frames
-    I_1 = I_l1 + m_l1*(l_1 - a(1))^2 + I_m2;
-    I_2 = I_l2 + m_l2*(l_2 - a(2))^2;
-
-% minimum set of dynamic parameters
-  pi_m(1) = a(1)*m_1 + m1_lC1 + a(1)*m_2;
-  pi_m(2) = a(1)*m1_lC1 + I_1 + k_r1^2*I_m1;
-  pi_m(3) = a(2)*m_2 + m2_lC2;
-  pi_m(4) = a(2)*m2_lC2 + I_2;
-  pi_m(5) = I_m2;
-  
-  pi_l = pi_m;
-
-% gravity acceleration
-  % g = 9.81;
-
-% friction matrix
-  K_r = diag([k_r1 k_r2]);
-  F_v = K_r*diag([0.01 0.01])*K_r;
-
-% sample time of controller
-  % Tc = 0.001;
-
-% impedance controller gains
-  % K_d = 1600*diag([1 1]);
-  % K_p = 5000*diag([1 1]);
-  % M_d = 100*diag([1 1]);
-  % iM_d = inv(M_d);
-    K_d = Kd*diag([1 1]);
-    K_p = Kp*diag([1 1]);
-    M_d = Md*diag([1 1]);
-    iM_d = inv(M_d);
-% constraint frame matrix
-  R_c = [cos(pi/4)  -sin(pi/4);
-        sin(pi/4)  cos(pi/4)];
-
-% stiffness matrix in base frame
-  K = R_c*[0 0;0 5e3]*R_c';
-
-% position of undeformed plane
-  o_r = [1;0];
-
-% initial position
-  p_i = [1+0.2*cos(pi/4); 0];
-
-% final position
-  p_f = [1.2+0.2*cos(pi/4);0.2];
-
-% initial joint configuration
-  q_i = inv_k2u(a,p_i);
-
-% duration of simulation
-  % t_d = 2.5;
-
-% trajectory in base frame
-  tra_5;
-
-% sample time for plots
-  Ts = Tc;
-
-  % assign simulink vars to workspace for use in the model
-  % Jesus Tatwik this is a fucking lot just to run ur 2R planar
-    assignin('base', 'pi_m', pi_m);
-    assignin('base', 'pi_l', pi_l);
-    assignin('base', 'g', g);
-    assignin('base', 'F_v', F_v);
-    assignin('base', 'K', K);
-    assignin('base', 'o_r', o_r);
-    assignin('base', 'o_d', o_d);
-    assignin('base', 'p_i', p_i);
-    assignin('base', 'p_f', p_f);
-    assignin('base', 'q_i', q_i);
-    assignin('base', 't_d', t_d);
-    assignin('base', 'T', T);
-    assignin('base', 'Ts', Ts);
-    assignin('base', 'Tc', Tc);
-    assignin('base', 'K_d', K_d);
-    assignin('base', 'K_p', K_p);
-    assignin('base', 'M_d', M_d);
-    assignin('base', 'iM_d', iM_d);
-    assignin('base', 'R_c', R_c);
-    assignin('base', 'a', a);
-    assignin('base', 'K_r', K_r);
-    assignin('base', 'F_v', F_v);
-    assignin('base', 'do_d', do_d);
-    assignin('base', 'ddo_d', ddo_d);
-
-sim('Impedance_Control\s9_3.mdl')
-    % plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic, JointLengths);
-    disp('Simulation complete');
+        % for j = 1:length(vars_in_eqs)
+            % subs(Tao(i), )
+        % end
+    % sim('Impedance_Control',tspan)
 end
 
 % lqrEditButton callback function

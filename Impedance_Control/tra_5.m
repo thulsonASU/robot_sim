@@ -1,7 +1,4 @@
-%TRA_5  Generation of trajectory #5.
-
-% L. Villani, G. Oriolo, B. Siciliano
-% February 2009
+%TRA_5
 
 % time base vector
   T = (0:Tc:t_d)';

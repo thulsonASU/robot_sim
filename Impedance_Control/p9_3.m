@@ -52,7 +52,7 @@ clf
   title('force');
   pt(7) = text(1.5, 60,'x_c');
   pt(8) = text(1.5, -170,'y_c');
-  
+  legend({'Position Error (Base Frame)', 'Contact Force (Base Frame)', 'Position Error (Rotated Base Frame)', 'Contact Force (Rotated Base Frame)'});
 
    %for i=1:8,
    %    set(pt(i),'fontname','Times','fontsize',12,'fontweight','normal');

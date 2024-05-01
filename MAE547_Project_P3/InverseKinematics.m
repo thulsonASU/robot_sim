@@ -1,11 +1,8 @@
-function q = InverseKinematics(p,param)
+function q = InverseKinematics(p,l2,l1,l3)
     x = p(1);
     y = p(2);
     z = p(3);
     
-    l1 = param.l1;
-    l2 = param.l2;
-    l3 = param.l3;
     
     q2 = z-l2;
     q1 = atan2(y,x);

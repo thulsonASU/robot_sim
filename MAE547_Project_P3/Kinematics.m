@@ -1,12 +1,7 @@
-function x = Kinematics(q,param)
-    l1 = param.l1;
-    l2 = param.l2;
-    l3 = param.l3;
-
+function x = Kinematics(q,l3,l1,l2)
     t1 = q(1);
     d2 = q(2);
     d3 = q(3);
-    
     % H0_3 computed with the main.m
     H = [[ 0, -sin(t1), cos(t1), cos(t1)*(d3 + l3) + l1*cos(t1)]
         [ 0,  cos(t1), sin(t1), sin(t1)*(d3 + l3) + l1*sin(t1)]

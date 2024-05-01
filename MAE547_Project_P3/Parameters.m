@@ -22,7 +22,7 @@ t1 = 0.1;
 d2 = -0.1;
 d3 = 0.1;
 
-xd = Kinematics([t1,d2,d3], param);
+xd = Kinematics(q);
 
 % PD Controller parameters
 Kp = diag([50 80 100 1 1 1]);

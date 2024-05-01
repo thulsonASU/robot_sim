@@ -291,11 +291,11 @@ ddo_d(1:m,:) = dds*(p_f - p_i)';
 % sample time for plots
 Ts = Tc;
 
-filename = "test.mat";
+filename = "impedanceControl_ws.mat";
 save(filename)
 
 % sim('s9_3.mdl')
-sim('ImpedanceControl.slx')
+sim('Impedance_Control.slx')
     % plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic, JointLengths);
 
 

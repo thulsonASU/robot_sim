@@ -321,7 +321,7 @@ function runButton_Callback(dhTable,dropdown)
 end
 
 % ============================================
-% = TYLERS DYNAMICAL WONDERLAND STARTS BELOW =
+% ================== TYLER ===================
 % ============================================
 
 function dynamicsButton_Callback(TransMats_Joint2Joint, NumberOfJoints, Tao, Kr_Sym, MassLI_Sym, MassMI_Sym, IntertiaLI_Sym, IntertiaMI_Sym, FrictionS_Sym, FrictionV_Sym, JointSymbolic, CenterOfMassSymbolic, JointLengths, CenterOfMassLengths, q, qd, qdd)

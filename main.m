@@ -411,21 +411,23 @@ function dynamicsButton_Callback(TransMats_Joint2Joint, NumberOfJoints, Tao, Kr_
     % plotButton = uibutton(dynamicsFig, 'Position', [230, 10, 100, 22], 'Text', 'Plot Simulation', 'ButtonPushedFcn', @(btn,event) plotButton_Callback(dynamicsFig));
 
     % Label for Simulink Buttons
-    uilabel(dynamicsFig, 'Text', 'Simulink Control Models', 'Position', [40, 100, 400, 22]);
+    uilabel(dynamicsFig, 'Text', 'Built-in Simulink Control Models', 'Position', [40, 100, 400, 22]);
     % Buttons for Simulink Models by Tatwik, Danis, and Zane
     % Indirect Force Control via Compliance
     indirectForceButton = uibutton(dynamicsFig, 'Position', [10, 80, 200, 22], 'Text', 'Compliance Force Control', 'ButtonPushedFcn', @(btn,event) indirectForceButton_Callback( ...
         dynamicsFig ... % Put Params here or do something else to get them passed to the model
         ));
     % Indirect Force Control via Impedance
-    indirectImpedanceButton = uibutton(dynamicsFig, 'Position', [10, 50, 200, 22], 'Text', 'Impedance Force Control', 'ButtonPushedFcn', @(btn,event) indirectImpedanceButton_Callback( ...
-        dynamicsFig ... % Put Params here or do something else to get them passed to the model
-        ));
+    indirectImpedanceButton = uibutton(dynamicsFig, 'Position', [10, 50, 200, 22], 'Text', 'Impedance Force Control', 'ButtonPushedFcn', @(btn,event) indirectImpedanceButton_Callback());
 end
 
 % Add Button Callback for Indirect Force Control via Compliance in Simulink
 function indirectForceButton_Callback(dynamicsFig)
     disp('WIP') % Zane and Gang
+
+    % addpath to MAE547_Project_P3 (Tyler Edit)
+    addpath('MAE547_Project_P3');
+
     dynamicsFig = uifigure('Name', 'Compliance Control with Gravity Compensation', 'NumberTitle', 'off');
     uilabel(dynamicsFig, 'Text', 'Provide the Values for the Following', 'Position', [40, 360, 500, 22]);
     closeButton = uibutton(dynamicsFig, 'Position', [10, 10, 100, 22], 'Text', 'Close', 'ButtonPushedFcn', @(btn,event) close(dynamicsFig));
@@ -500,7 +502,7 @@ end
 function indirectForceSimButton_Callback(KpEditField, KdEditField, xdEditField, HEditField, wallEditField, axisEditField, t1EditField, t2EditField, t3EditField, d1EditField, d2EditField, d3EditField,l1EditField, l2EditField, l3EditField, m1EditField, m2EditField, m3EditField)
 
     %param.Kp = Kp;
-% Set the parameters in the Simulink model
+    % Set the parameters in the Simulink model
     assignin('base', 'Kp', KpEditField.Value);
     assignin('base', 'Kd', KdEditField.Value);
     assignin('base', 'xd', str2num(xdEditField.Value));
@@ -519,7 +521,14 @@ function indirectForceSimButton_Callback(KpEditField, KdEditField, xdEditField, 
     assignin('base', 'm1', m1EditField.Value);
     assignin('base', 'm2', m2EditField.Value);
     assignin('base', 'm3', m3EditField.Value);
-    sim("MAE547_Project_P3\MAE547ComplianceControl.slx")
+
+    disp('Running Please Wait ...');
+    out = sim("MAE547_Project_P3\MAE547ComplianceControl.slx")
+    disp('Simulation Complete');
+    disp('Press Plot to see the results!');
+
+    % pass the output to the plot button
+    assignin('base', 'out', out);
 
 end
 
@@ -614,31 +623,17 @@ end
 
 
 % Add Button Callback for Indirect Force Control via Impedance in Simulink
-function indirectImpedanceButton_Callback(dynamicsFig)
-    disp('WIP') % Tatwik and Danis
+function indirectImpedanceButton_Callback()
+    % disp('WIP') % Tatwik and Danis
     % PUT CODE HERE FOR SIMULINK MODEL
+    addpath('Impedance_Control'); % select this folder path for Impedance Control Functions (Tyler)
 
-    impedanceGUI = uifigure('Name', 'Impedance Control Simulink Model', 'NumberTitle', 'off');
-    % Open Simulink model
-    % open_system('Impedance_Control.slx');
-    
-    % F_v = K_r*diag([0.01 0.01])*K_r;
-    
-    % Run Simulink simulation
-    % sim('Impedance_Control.slx');
-%     M_d = 100*diag([]);
-%     iM_d = inv(M_d)
-% imp_Kd
-% imp_Kp
-
-        % for j = 1:length(vars_in_eqs)
-            % subs(Tao(i), )
-        % end
-    % sim('Impedance_Control',tspan)
+    % Added this to run the ImpedanceButton_Callback.m file (Impedance GUI)
+    run('Impedance_Control\ImpedanceButton_Callback.m');
 end
 
 % lqrEditButton callback function
-function lqrEditButton_Callback(dynamicsFig)
+function lqrEditButton_Callback()
     % Create a new figure window for editing LQR gains
     lqrFig = uifigure('Name', 'Edit LQR Gains', 'Position', [200, 200, 400, 200]);
 
@@ -1024,7 +1019,7 @@ end
 % Define the function to start the animation
 function startAnimation(q,x,y,z)
     % Plot robot
-    figure;
+    anim = figure;
     hold on;  % Hold the current plot
     h = gobjects(1, length(q));  % Initialize array of graphics objects
     l = gobjects(1, length(q));  % Initialize array of line objects
@@ -1048,8 +1043,24 @@ function startAnimation(q,x,y,z)
     ylim([min(y(:))-1, max(y(:))+1]);
     zlim([min(z(:))-1, max(z(:))+1]);
 
-    % Set the view to top down
-    view(3);
+    % Ask the user for the view
+    viewOptions = {'Top Down', 'Side View (X-axis)', 'Side View (Y-axis)', 'Orthographic'};
+    [indx,tf] = listdlg('PromptString', 'Select a view:', 'SelectionMode', 'single', 'ListString', viewOptions);
+
+    % Set the view based on the user's selection
+    if tf == 1
+        if indx == 1
+            view(0, 90); % Top Down View
+        elseif indx == 2
+            % side view from X axis
+            view(90, 0); % Side View
+        elseif indx == 3
+            % side view from Y axis
+            view(0, 0); % Side View
+        elseif indx == 4
+            view(3); % Orthographic view
+        end
+    end
 
     % Generate legend labels
     labels = cell(1, length(q) + 1);
@@ -1068,7 +1079,11 @@ function startAnimation(q,x,y,z)
     zlabel('Z');
     title('Robot Operational Space Animation');
 
+    % Create a new figure
+    % fig = figure;
+
     % Animation loop
+    filename = 'gifs\animationOutput.gif';
     for k = 2:size(x, 2)
         % Update the line from the origin to the first link
         originLine.XData = [0, x(1, k)];
@@ -1091,6 +1106,18 @@ function startAnimation(q,x,y,z)
 
         % Update the plot
         drawnow;
+
+        % Capture the plot as a frame
+        frame = getframe(anim);
+        im = frame2im(frame);
+        [imind,cm] = rgb2ind(im,256);
+
+        % Write to the GIF File
+        if k == 2
+            imwrite(imind,cm,filename,'gif', 'Loopcount',inf, 'DelayTime', 0.001);
+        else
+            imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime', 0.001);
+        end
 
     end
 end

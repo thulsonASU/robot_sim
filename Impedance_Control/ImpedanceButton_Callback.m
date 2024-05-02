@@ -1,6 +1,8 @@
 function ImpedanceButton_Callback()
-    clc;
-    clear all;
+    
+    % These commands were commented out because they will break the rest of the GUI if executed. (Tyler Edit)
+    % clc; 
+    % clear all;
 
     % Create a new figure window
     ImpedanceFig = uifigure('Name', 'Impedance Simulation', 'NumberTitle', 'off');
@@ -303,6 +305,44 @@ if exist(filename, 'file') == 2
 end
 
 save(filename);
+
+% assign necessary variables to the workspace for the simulink model (Tyler Edit)
+assignin('base', 'a', a);
+assignin('base', 'k_r1', k_r1);
+assignin('base', 'k_r2', k_r2);
+assignin('base', 'pi_m', pi_m);
+assignin('base', 'pi_l', pi_l);
+assignin('base', 'g', g);
+assignin('base', 'K_d', K_d);
+assignin('base', 'K_p', K_p);
+assignin('base', 'M_d', M_d);
+assignin('base', 'iM_d', iM_d);
+assignin('base', 'R_c', R_c);
+assignin('base', 'K', K);
+assignin('base', 'o_r', o_r);
+assignin('base', 'p_i', p_i);
+assignin('base', 'p_f', p_f);
+assignin('base', 'q_i', q_i);
+assignin('base', 't_d', t_d);
+assignin('base', 'T', T);
+assignin('base', 'D_s', D_s);
+assignin('base', 'ds_c', ds_c);
+assignin('base', 't_f', t_f);
+assignin('base', 'T_1', T_1);
+assignin('base', 's', s);
+assignin('base', 'ds', ds);
+assignin('base', 'dds', dds);
+assignin('base', 'err', err);
+assignin('base', 'n', n);
+assignin('base', 'm', m);
+assignin('base', 'o_d', o_d);
+assignin('base', 'do_d', do_d);
+assignin('base', 'ddo_d', ddo_d);
+assignin('base', 'Ts', Ts);
+% Tc
+assignin('base', 'Tc', Tc);
+% F_v
+assignin('base', 'F_v', F_v);
 
 % sim('s9_3.mdl')
 sim('Impedance_Control.slx')

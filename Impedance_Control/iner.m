@@ -1,9 +1,6 @@
 function  B = iner(c_2)
 %INER   Inertia matrix of two-link planar arm.
-%       B = INER(c_2) returns 2-by-2 inertia matrix of two-link planar arm
-%       where:
-%
-%       c_2 = cos(q(2))
+
 
 global pi_m a k_r2
 

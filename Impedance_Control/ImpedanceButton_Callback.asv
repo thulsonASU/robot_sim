@@ -146,11 +146,14 @@ global a k_r1 k_r2 pi_m pi_l
     end
 
 % Impedance parameters code starts here
+% global a k_r1 k_r2 pi_m pi_l
 
 % load manipulator dynamic parameters without load mass
   % link parameters
 
   % masses
+    % m_l1  = 50;
+    % m_l2  = 50;
     m_l1 = m_l(1);
     m_l2 = m_l(2);
 
@@ -206,11 +209,11 @@ global a k_r1 k_r2 pi_m pi_l
   F_v = K_r*diag([0.01 0.01])*K_r;
 
 % impedance controller gains
+
     K_d = Kd*diag([1 1]);
     K_p = Kp*diag([1 1]);
     M_d = Md*diag([1 1]);
     iM_d = inv(M_d);
-    
 % constraint frame matrix
   R_c = [cos(pi/4)  -sin(pi/4);
         sin(pi/4)  cos(pi/4)];
@@ -230,6 +233,8 @@ global a k_r1 k_r2 pi_m pi_l
 % initial joint configuration
   q_i = inv_k2u(a,p_i);
 
+% duration of simulation
+  % t_d = 2.5;
 
 % trajectory in base frame
 % time base vector
@@ -328,6 +333,7 @@ clf
   subplot(2,4,1)
   plot(time, e);
   axis([0 t_d -6e-2 6e-2]);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
   xlabel('[s]');
   ylabel('[m]');
   title('Position error in the base frame');
@@ -337,6 +343,7 @@ clf
   subplot(2,4,2)
   plot(time, f_e);
   axis([0 t_d -550 550]);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
   xlabel('[s]');
   ylabel('[N]');
   title('contact force in the base frame');
@@ -359,6 +366,7 @@ clf
   subplot(2,4,4)
   plot(time, f_ec);
   axis([0 t_d -550 550]);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
   xlabel('[s]');
   ylabel('[N]');
   title('contact force in the rotated base frame');
@@ -368,6 +376,7 @@ clf
 % desired position
   subplot(2,4,5)
   plot(time, pos_desired);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
   xlabel('[s]');
   ylabel('[m]');
   title('Desired Position');
@@ -376,6 +385,7 @@ clf
 % desired velocity
   subplot(2,4,6)
   plot(time, vel_desired);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
   xlabel('[s]');
   ylabel('[m/s]');
   title('Desired Velocity');
@@ -384,6 +394,7 @@ clf
 % Actual position
   subplot(2,4,7)
   plot(time, pos_actual);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
   xlabel('[s]');
   ylabel('[m]');
   title('Actual Position');
@@ -392,6 +403,7 @@ clf
 % Actual velocity
   subplot(2,4,8)
   plot(time, vel_actual);
+  %set(gca,'fontname','Times','fontsize',12,'fontweight','normal');
   xlabel('[s]');
   ylabel('[m/s]');
   title('Actual Velocity');

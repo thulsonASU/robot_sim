@@ -1,9 +1,15 @@
+% MAE 547 Final Project
+% Authors:
+% Samir Strasser, Tyler Hulson, Zane Reynolds, Danis Nugroho, & Sai Srinivas Tatwik Meesala
+
+
 % Inverse Kine
 % Dynamics
 
-%%Assumtions include
+% Assumtions include
 % All joints are revolute or Prismatic
 % All links are straight
+
 
 %% GUI
 % Create a figure window
@@ -423,9 +429,6 @@ end
 
 % Add Button Callback for Indirect Force Control via Compliance in Simulink
 function indirectForceButton_Callback(dynamicsFig)
-    disp('WIP') % Zane and Gang
-
-    % addpath to MAE547_Project_P3 (Tyler Edit)
     addpath('MAE547_Project_P3');
 
     dynamicsFig = uifigure('Name', 'Compliance Control with Gravity Compensation', 'NumberTitle', 'off');
@@ -624,8 +627,7 @@ end
 
 % Add Button Callback for Indirect Force Control via Impedance in Simulink
 function indirectImpedanceButton_Callback()
-    % disp('WIP') % Tatwik and Danis
-    % PUT CODE HERE FOR SIMULINK MODEL
+    % Tatwik and Danis
     addpath('Impedance_Control'); % select this folder path for Impedance Control Functions (Tyler)
 
     % Added this to run the ImpedanceButton_Callback.m file (Impedance GUI)
@@ -766,7 +768,6 @@ function runSimButton_Callback( ...
         return;
     end
 
-    % This is the dumbest thing I have ever had to do in order to properly 
     % substitute in all symbolic variables with the correct user input values
 
     % define sym for center of mass symbolic as L1, L2, L3, etc. for number of joints so the lengths are equivalent to the number of user inputs
@@ -849,7 +850,7 @@ function runSimButton_Callback( ...
     % disp('Input Matrix (B):')
     % disp(B)
 
-    % LQR Stuff
+    % LQR
     % check if the LQR checkbox is checked
     if lqrCheckBox.Value == 1  
         % check if QEditField and REditField are empty
@@ -873,8 +874,6 @@ function runSimButton_Callback( ...
         Q = 0;
         R = 0;
     end
-
-    % Make some of these options user inputs :) (Done did it)
     options = odeset('MaxStep',maxStep_Val,'RelTol',relTol_Val,'AbsTol',absTol_Val*ones(1,(NumberOfJoints*2)));
 
     tf = str2num(tf.Value);
@@ -958,9 +957,9 @@ function plotButton_Callback(dynamicsFig,TransMats_Joint2Joint, q, JointSymbolic
     for i = 1:size(vel, 1)
         plot(velAxes, t, vel(i,:));
         hold(velAxes, 'on');
-        legendEntries{i} = sprintf('Joint %d', i); % Add entry to legend
+        legendEntries{i} = sprintf('Joint %d', i);
     end
-    legend(velAxes, legendEntries); % Add legend to plot
+    legend(velAxes, legendEntries);
     title(velAxes, 'Joint Velocities Over Time');
     xlabel(velAxes, 'Time (s)');
     ylabel(velAxes, 'Velocity (rad/s)');
@@ -1122,4 +1121,4 @@ function startAnimation(q,x,y,z)
     end
 end
 
-% END OF TYLERS DYNAMICAL WONDERLAND
+% END
